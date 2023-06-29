@@ -1,0 +1,244 @@
+- id: '1620071993063'
+  alias: Arm Blink
+  description: ''
+  trigger:
+  - platform: time
+    at: '21:00:00'
+  condition:
+  - condition: state
+    entity_id: alarm_control_panel.blink_house
+    state: disarmed
+  action:
+  - service: alarm_control_panel.alarm_arm_away
+    data: {}
+    target:
+      entity_id: alarm_control_panel.blink_house
+  - delay:
+      minutes: 2
+  - service: notify.mobile_app_paul_s_phone
+    data:
+      message: Blink alarm armed successfully.
+  - service: notify.telegram_bot
+    data:
+      message: Blink alarm armed successfully.
+  mode: single
+- id: '1672867600743'
+  alias: Daily Gas and Electric Emails
+  description: ''
+  trigger:
+  - platform: time
+    at: 00:00:00
+  condition: []
+  action:
+  - service: telegram_bot.send_message
+    data:
+      message: 'Today''s gas cost: {{ states(''sensor.smart_meter_gas_cost_today'')
+        }}
+
+        Today''s electric cost: {{ states(''sensor.smart_meter_electricity_cost_today'')
+        }}
+
+        '
+  - service: notify.email
+    data:
+      message: 'Today''s gas cost: {{ states(''sensor.smart_meter_gas_cost_today'')
+        }}
+
+        Today''s electric cost: {{ states(''sensor.smart_meter_electricity_cost_today'')
+        }}
+
+        '
+  mode: single
+- id: '1686042092819'
+  alias: If DNS is turned off for longer than an hour, turn on
+  description: ''
+  trigger:
+  - platform: device
+    type: turned_off
+    device_id: 370a06adcd43c0c2fe8df3d31fb0661e
+    entity_id: switch.adguard_protection
+    domain: switch
+  condition: []
+  action:
+  - delay:
+      hours: 1
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+  - condition: state
+    entity_id: switch.adguard_protection
+    state: 'off'
+  - service: switch.turn_on
+    target:
+      entity_id: switch.adguard_protection
+  - service: notify.mobile_app_paul_s_phone
+    data:
+      message: DNS turned off!
+  - service: notify.telegram_bot
+    data:
+      message: DNS turned off!
+  mode: single
+- id: '1686060855141'
+  alias: Home Assistant Auto-update on a schedule basis
+  description: ''
+  use_blueprint:
+    path: edwardtfn/auto_update_scheduled.yaml
+    input:
+      verbose_logging_bool: true
+      schedule_monthday: 5
+      actions_pos_update:
+      - service: notify.mobile_app_paul_s_phone
+        data:
+          message: Home Assistant update process initiated.
+      - service: notify.telegram_bot
+        data:
+          message: Home Assistant update process initiated.
+      schedule_entity: schedule.update_schedule
+  mode: single
+- id: '1686173354607'
+  alias: Disarm Blink
+  description: ''
+  trigger:
+  - platform: time
+    at: 07:00:00
+  condition:
+  - condition: state
+    entity_id: alarm_control_panel.blink_house
+    state: armed_away
+  action:
+  - service: alarm_control_panel.alarm_disarm
+    data: {}
+    target:
+      entity_id: alarm_control_panel.blink_house
+  - delay:
+      minutes: 2
+  - service: notify.mobile_app_paul_s_phone
+    data:
+      message: Blink alarm disarmed successfully.
+  - service: notify.telegram_bot
+    data:
+      message: Blink alarm disarmed successfully.
+  mode: single
+- id: '1686317391934'
+  alias: Low Battery
+  description: ''
+  use_blueprint:
+    path: gmlupatelli/low_battery_notification.yaml
+    input:
+      actions:
+      - service: notify.mobile_app_paul_s_phone
+        data:
+          message: Low battery detected.
+      - service: notify.telegram_bot
+        data:
+          message: Low battery detected.
+  mode: single
+- id: '1686774938651'
+  alias: Stale backup check
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.backups_stale
+    to: 'on'
+  condition: []
+  action:
+  - service: notify.telegram_bot
+    data:
+      message: Backups are not up to date!
+  - service: notify.mobile_app_paul_s_phone
+    data:
+      message: Backups are not up to date!
+  mode: single
+- id: '1687127160841'
+  alias: Blink Update
+  description: ''
+  trigger:
+  - platform: time_pattern
+    minutes: '1'
+  condition: []
+  action:
+  - service: blink.trigger_camera
+    data:
+      device_id: 1216f4276b8d3c3a02b5f33ea94675bd
+  - delay:
+      minutes: 2
+  - service: blink.blink_update
+    data: {}
+  - service: notify.mobile_app_paul_s_phone
+    data:
+      message: Blink update process initiated.
+  - service: notify.telegram_bot
+    data:
+      message: Blink update process initiated.
+  - delay:
+      minutes: 2
+  - service: blink.trigger_camera
+    data:
+      device_id: a44da96fc140165fbaf6cf5591c4621a
+  - delay:
+      minutes: 2
+  - service: blink.blink_update
+    data: {}
+  - service: notify.mobile_app_paul_s_phone
+    data:
+      message: Blink update process completed.
+  - service: notify.telegram_bot
+    data:
+      message: Blink update process completed.
+  mode: single
+- id: '1687203418525'
+  alias: WAN Port down
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.honor_router_3_wan_status
+    to: unavailable
+  condition: []
+  action:
+  - service: notify.telegram_bot
+    data:
+      message: Internet connection is down!
+  - service: notify.mobile_app_paul_s_phone
+    data:
+      message: Internet connection is down!
+  mode: single
+- id: '1686780104225'
+  alias: New Automation
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.conservatory_camera_cell_motion_detection_2
+    to: 'on'
+  condition:
+  - condition: time
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+    - sun
+    after: '23:00:00'
+    before: 04:00:00
+  action:
+  - type: turn_on
+    device_id: b11e5a8be43e648563eafe34653066d7
+    entity_id: switch.socket_7_socket
+    domain: switch
+  - delay:
+      minutes: 2
+  - type: turn_off
+    device_id: b11e5a8be43e648563eafe34653066d7
+    entity_id: switch.socket_7_socket
+    domain: switch
+  mode: single
+- id: '1687961284593'
+  description: ''
+  trigger: []
+  condition: []
+  action: []
+  mode: single

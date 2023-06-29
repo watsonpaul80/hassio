@@ -1,0 +1,15 @@
+'1686173847704':
+  sequence:
+  - service: notify.notify
+    data:
+      message: 'Devices still turned on: {{ states | selectattr(''state'', ''eq'',
+        ''on'') | map(attribute=''name'') | join('', '') }}'
+  - condition: template
+    value_template: '{{ states | selectattr(''state'', ''eq'', ''on'') | list | count
+      > 0 }}'
+'1687961433469':
+  alias: Add Hildebrand CAD Entities
+  use_blueprint:
+    path: jamesonuk/add_hildebrand.yaml
+    input:
+      input_cad_mac: 441793504B04

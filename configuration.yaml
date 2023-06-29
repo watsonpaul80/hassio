@@ -1,0 +1,229 @@
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+# Group configurations
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+# Switch configurations
+switch:
+  - platform: wake_on_lan
+    mac: a8:a1:59:19:a8:db
+    host: 192.168.3.32
+
+# Sensor configurations
+sensor:
+  - platform: systemmonitor
+    resources:
+      - type: disk_use_percent
+        arg: /config
+      - type: memory_free
+      - type: processor_use
+      - type: processor_temperature
+        arg: /
+      - type: disk_use
+      - type: disk_free
+      - type: throughput_network_in
+        arg: eth0
+      - type: throughput_network_out
+        arg: eth0
+      - type: last_boot
+        arg: ""
+
+  - platform: template
+    sensors:
+      system_uptime:
+        friendly_name: "System Uptime"
+        value_template: >
+          {% set last_boot = states('sensor.last_boot') %}
+          {% set current_time = as_timestamp(now()) %}
+          {% set uptime_seconds = current_time - as_timestamp(last_boot) %}
+          {% set uptime_minutes = uptime_seconds // 60 %}
+          {% set uptime_hours = uptime_minutes // 60 %}
+          {% set uptime_days = uptime_hours // 24 %}
+          {{ "%d days %02d:%02d:%02d" | format(uptime_days, uptime_hours % 24, uptime_minutes % 60, uptime_seconds % 60) }}
+
+# InfluxDB configurations
+influxdb:
+  host: a0d7b954-influxdb
+  port: 8086
+  database: homeassistant
+  username: !secret influxdb_username
+  password: !secret influxdb_password
+  max_retries: 3
+  default_measurement: state
+
+# Notify configurations
+notify:
+  - name: email
+    platform: smtp
+    server: smtp.gmail.com
+    port: 587
+    timeout: 15
+    sender: !secret email_sender
+    encryption: starttls
+    username: !secret email_username
+    password: !secret email_password
+    recipient:
+      - !secret email_recipient
+    sender_name: HASSIO
+  - platform: telegram
+    name: 'Telegram Bot'
+    chat_id: 1054773464
+
+# Recorder configurations
+recorder:
+  db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
+
+# Energy Costs
+template:
+  sensor:
+    - name: "Smart Meter Electricity: Cost (Today)"
+      unique_id: smart_meter_electricity_cost_today
+      device_class: monetary
+      unit_of_measurement: "GBP"
+      state_class: "total_increasing"
+      icon: mdi:cash
+      state: "{{ (
+        states('sensor.smart_meter_electricity_import_today') | float(default=0)
+        * states('sensor.smart_meter_electricity_import_unit_rate') | float(default=0)
+        + states('sensor.smart_meter_electricity_import_standing_charge') | float(default=0)
+      ) | round(2) }}"
+
+    - name: "Smart Meter Gas: Cost (Today)"
+      unique_id: smart_meter_gas_cost_today
+      device_class: monetary
+      unit_of_measurement: "GBP"
+      state_class: "total_increasing"
+      icon: mdi:cash
+      state: "{{ (
+        states('sensor.smart_meter_gas_import_today') | float(default=0)
+        * states('sensor.smart_meter_gas_import_unit_rate') | float(default=0)
+        + states('sensor.smart_meter_gas_import_standing_charge') | float(default=0)
+      ) | round(2) }}"
+
+# MQTT Sensors
+mqtt:
+  sensor:  
+    - name: "Smart Meter Electricity: Import"
+      unique_id: "smart_meter_electricity_import"
+      state_topic: "glow/441793504B04/SENSOR/electricitymeter"
+      device_class: "energy"
+      unit_of_measurement: "kWh"
+      state_class: "total_increasing"
+      value_template: >
+        {% if value_json['electricitymeter']['energy']['import']['cumulative'] == 0 %}
+          {{ states('sensor.smart_meter_electricity_import') }}
+        {% else %}
+          {{ value_json['electricitymeter']['energy']['import']['cumulative'] }}
+        {% endif %}
+      icon: "mdi:flash"
+    - name: "Smart Meter Electricity: Import (Today)"
+      unique_id: "smart_meter_electricity_import_today"
+      state_topic: "glow/441793504B04/SENSOR/electricitymeter"
+      device_class: "energy"
+      unit_of_measurement: "kWh"
+      state_class: "measurement"
+      value_template: >
+        {% if value_json['electricitymeter']['energy']['import']['day'] == 0 
+          and now() > now().replace(hour=0).replace(minute=1).replace(second=0).replace(microsecond=0) %}
+          {{ states('sensor.smart_meter_electricity_import_today') }}
+        {% else %}
+          {{ value_json['electricitymeter']['energy']['import']['day'] }}
+        {% endif %}
+      icon: "mdi:flash"
+    
+    - name: "Smart Meter Electricity: Import Unit Rate"
+      unique_id: "smart_meter_electricity_import_unit_rate"
+      state_topic: "glow/441793504B04/SENSOR/electricitymeter"
+      device_class: "monetary"
+      unit_of_measurement: "GBP/kWh"
+      state_class: "measurement"
+      value_template: "{{ value_json['electricitymeter']['energy']['import']['price']['unitrate'] }}"
+      icon: "mdi:cash"
+    - name: "Smart Meter Electricity: Import Standing Charge"
+      unique_id: "smart_meter_electricity_import_standing_charge"
+      state_topic: "glow/441793504B04/SENSOR/electricitymeter"
+      device_class: "monetary"
+      unit_of_measurement: "GBP"
+      state_class: "measurement"
+      value_template: "{{ value_json['electricitymeter']['energy']['import']['price']['standingcharge'] }}"
+      icon: "mdi:cash"
+    - name: "Smart Meter Electricity: Power"
+      unique_id: "smart_meter_electricity_power"
+      state_topic: "glow/441793504B04/SENSOR/electricitymeter"
+      device_class: "power"
+      unit_of_measurement: "kW"
+      state_class: "measurement"
+      value_template: >
+        {% if value_json['electricitymeter']['power']['value'] < 0 %}
+          {{ states('sensor.smart_meter_electricity_power') }}
+        {% else %}
+          {{ value_json['electricitymeter']['power']['value'] }}
+        {% endif %}
+      icon: "mdi:flash"
+    - name: "Smart Meter Gas: Import"
+      unique_id: "smart_meter_gas_import"
+      state_topic: "glow/441793504B04/SENSOR/gasmeter"
+      device_class: "energy"
+      unit_of_measurement: "kWh"
+      state_class: "total_increasing"
+      value_template: >
+        {% if value_json['gasmeter']['energy']['import']['cumulative'] == 0 %}
+          {{ states('sensor.smart_meter_gas_import') }}
+        {% else %}
+          {{ value_json['gasmeter']['energy']['import']['cumulative'] }}
+        {% endif %}
+      icon: "mdi:fire"
+    - name: "Smart Meter Gas: Import (Today)"
+      unique_id: "smart_meter_gas_import_today"
+      state_topic: "glow/441793504B04/SENSOR/gasmeter"
+      device_class: "energy"
+      unit_of_measurement: "kWh"
+      state_class: "measurement"
+      value_template: >
+        {% if value_json['gasmeter']['energy']['import']['day'] == 0 
+          and now() > now().replace(hour=0).replace(minute=1).replace(second=0).replace(microsecond=0) %}
+          {{ states('sensor.smart_meter_gas_import_today') }}
+        {% else %}
+          {{ value_json['gasmeter']['energy']['import']['day'] }}
+        {% endif %}
+      icon: "mdi:fire"
+   
+    - name: "Smart Meter Gas: Import Unit Rate"
+      unique_id: "smart_meter_gas_import_unit_rate"
+      state_topic: "glow/441793504B04/SENSOR/gasmeter"
+      device_class: "monetary"
+      unit_of_measurement: "GBP/kWh"
+      state_class: "measurement"
+      value_template: "{{ value_json['gasmeter']['energy']['import']['price']['unitrate'] }}"
+      icon: "mdi:cash"
+    - name: "Smart Meter Gas: Import Standing Charge"
+      unique_id: "smart_meter_gas_import_standing_charge"
+      state_topic: "glow/441793504B04/SENSOR/gasmeter"
+      device_class: "monetary"
+      unit_of_measurement: "GBP"
+      state_class: "measurement"
+      value_template: "{{ value_json['gasmeter']['energy']['import']['price']['standingcharge'] }}"
+      icon: "mdi:cash"
+# Alexa configurations
+alexa:
+  smart_home:
+
+# Telegram Bot configurations
+telegram_bot:
+  - platform: polling
+    api_key: !secret telegram_api_key
+    allowed_chat_ids: !secret telegram_allowed_chat_ids
+
+# HTTP configurations
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.30.33.0/24
