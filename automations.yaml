@@ -415,3 +415,14 @@
   action:
   - service: shell_command.pushupdates_to_github
     data: {}
+- id: '1689342086245'
+  alias: Push updates to github
+  description: ''
+  trigger:
+  - platform: homeassistant
+    event: start
+  condition: []
+  action:
+  - service: shell_command.pushupdates_to_github
+    data: {}
+  mode: single
