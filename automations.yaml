@@ -416,7 +416,7 @@
   - service: shell_command.pushupdates_to_github
     data: {}
 - id: '1689342086245'
-  alias: Push updates to github
+  alias: Push updates to GitHub
   description: ''
   trigger:
   - platform: homeassistant
@@ -425,4 +425,16 @@
   action:
   - service: shell_command.pushupdates_to_github
     data: {}
+  - service: persistent_notification.create
+    data:
+      message: 'GitHub update attempt: {{ now().strftime("%Y-%m-%d %H:%M:%S") }}'
+      title: GitHub Update
+  - service: system_log.write
+    data:
+      level: error
+      message: 'GitHub update attempt: {{ now().strftime("%Y-%m-%d %H:%M:%S") }}'
+  - service: file.write
+    data:
+      path: /config/github_update.log
+      content: 'GitHub update attempt: {{ now().strftime("%Y-%m-%d %H:%M:%S") }}'
   mode: single
