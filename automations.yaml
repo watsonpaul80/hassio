@@ -433,8 +433,4 @@
     data:
       level: error
       message: 'GitHub update attempt: {{ now().strftime("%Y-%m-%d %H:%M:%S") }}'
-  - service: python_script.write_to_file
-    data_template:
-      content: 'GitHub update attempt: {{ now().strftime("%Y-%m-%d %H:%M:%S") }}'
-      file_path: /config/github_update.log
   mode: single
