@@ -405,16 +405,6 @@
 
         '
   mode: single
-- id: '1689339021550'
-  alias: Upload Configuration to GitHub
-  description: Automatically commits and pushes Home Assistant configuration changes
-    to GitHub when Home Assistant starts.
-  trigger:
-  - platform: homeassistant
-    event: start
-  action:
-  - service: shell_command.pushupdates_to_github
-    data: {}
 - id: '1689342086245'
   alias: Push updates to GitHub
   description: ''
