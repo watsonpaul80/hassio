@@ -1,50 +1,75 @@
 - id: '1620071993063'
   alias: Arm Blink
-  description: ''
+  description: Arms the Blink alarm system at sunset
   trigger:
-  - platform: time
-    at: '21:00:00'
+  - platform: sun
+    event: sunset
+    offset: 0
   condition:
   - condition: state
     entity_id: alarm_control_panel.blink_house
     state: disarmed
+  - condition: sun
+    after: sunset
   action:
   - service: alarm_control_panel.alarm_arm_away
-    data: {}
     target:
       entity_id: alarm_control_panel.blink_house
   - delay:
       minutes: 2
   - service: notify.mobile_app_paul_s_phone
     data:
-      message: Blink alarm armed successfully.
-  - service: notify.telegram_bot
+      message: Hey Paul! Just wanted to let you know that the Blink alarm has been
+        armed successfully.
+  - condition: time
+    after: 07:00:00
+    before: '23:00:00'
+  - service: notify.alexa_media
     data:
-      message: Blink alarm armed successfully.
+      message: The Blink alarm has been armed successfully.
+      target:
+      - media_player.master_bedroom_echo
+      - media_player.downstairs_echo
+      - media_player.paul_s_2nd_alexa_app_for_pc
+      - media_player.office_echo
+      data:
+        type: tts
   mode: single
 - id: '1672867600743'
-  alias: Daily Gas and Electric Emails
-  description: ''
+  alias: Midnight Gas and Electric Notifications
+  description: Sends daily gas and electric cost notifications at midnight
   trigger:
   - platform: time
     at: 00:00:00
   condition: []
   action:
-  - service: telegram_bot.send_message
+  - service: notify.telegram_bot
     data:
-      message: 'Today''s gas cost: {{ states(''sensor.smart_meter_gas_cost_today'')
+      message: 'Good morning! Here are today''s energy costs:
+
+        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today'') }}.
+
+        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today'')
         }}
 
-        Today''s electric cost: {{ states(''sensor.smart_meter_electricity_cost_today'')
+        '
+  - service: notify.mobile_app_paul_s_phone
+    data:
+      message: 'Good morning! Here are today''s energy costs:
+
+        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today'') }}.
+
+        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today'')
         }}
 
         '
   - service: notify.email
     data:
-      message: 'Today''s gas cost: {{ states(''sensor.smart_meter_gas_cost_today'')
-        }}
+      message: 'Good morning! Here are today''s energy costs:
 
-        Today''s electric cost: {{ states(''sensor.smart_meter_electricity_cost_today'')
+        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today'') }}.
+
+        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today'')
         }}
 
         '
@@ -71,6 +96,7 @@
   - service: switch.turn_on
     target:
       entity_id: switch.adguard_protection
+    data: {}
   - service: notify.mobile_app_paul_s_phone
     data:
       message: DNS turned off!
@@ -99,8 +125,9 @@
   alias: Disarm Blink
   description: ''
   trigger:
-  - platform: time
-    at: 07:00:00
+  - platform: sun
+    event: sunrise
+    offset: 0
   condition:
   - condition: state
     entity_id: alarm_control_panel.blink_house
@@ -150,43 +177,6 @@
     data:
       message: Backups are not up to date!
   mode: single
-- id: '1687127160841'
-  alias: Blink Update
-  description: ''
-  trigger:
-  - platform: time_pattern
-    minutes: '1'
-  condition: []
-  action:
-  - service: blink.trigger_camera
-    data:
-      device_id: 1216f4276b8d3c3a02b5f33ea94675bd
-  - delay:
-      minutes: 2
-  - service: blink.blink_update
-    data: {}
-  - service: notify.mobile_app_paul_s_phone
-    data:
-      message: Blink update process initiated.
-  - service: notify.telegram_bot
-    data:
-      message: Blink update process initiated.
-  - delay:
-      minutes: 2
-  - service: blink.trigger_camera
-    data:
-      device_id: a44da96fc140165fbaf6cf5591c4621a
-  - delay:
-      minutes: 2
-  - service: blink.blink_update
-    data: {}
-  - service: notify.mobile_app_paul_s_phone
-    data:
-      message: Blink update process completed.
-  - service: notify.telegram_bot
-    data:
-      message: Blink update process completed.
-  mode: single
 - id: '1687203418525'
   alias: WAN Port down
   description: ''
@@ -205,29 +195,25 @@
       message: Internet connection is down!
   mode: single
 - id: '1686780104225'
-  alias: New Automation
+  alias: If movement trigger outside light
   description: ''
   trigger:
   - platform: state
     entity_id:
     - binary_sensor.conservatory_camera_cell_motion_detection_2
     to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
   condition:
-  - condition: time
-    weekday:
-    - mon
-    - tue
-    - wed
-    - thu
-    - fri
-    - sat
-    - sun
-    after: '23:00:00'
-    before: 04:00:00
+  - condition: sun
+    after: sunset
+    before: sunrise
   action:
   - type: turn_on
     device_id: b11e5a8be43e648563eafe34653066d7
-    entity_id: switch.socket_7_socket
+    entity_id: c845cf7e7261566197341334093fba75
     domain: switch
   - delay:
       minutes: 2
@@ -236,9 +222,195 @@
     entity_id: switch.socket_7_socket
     domain: switch
   mode: single
-- id: '1687961284593'
+- id: '1688339061635'
+  alias: 'Garden Light on for more then 10 minutes '
   description: ''
-  trigger: []
+  trigger:
+  - platform: device
+    type: turned_on
+    device_id: b11e5a8be43e648563eafe34653066d7
+    entity_id: switch.socket_7_socket
+    domain: switch
+    for:
+      hours: 0
+      minutes: 20
+      seconds: 0
   condition: []
-  action: []
+  action:
+  - type: turn_off
+    device_id: b11e5a8be43e648563eafe34653066d7
+    entity_id: switch.socket_7_socket
+    domain: switch
   mode: single
+- id: '1688742269459'
+  alias: Hourly Blink Snapshots
+  description: ''
+  trigger:
+  - platform: time_pattern
+    minutes: '0'
+  condition: []
+  action:
+  - service: blink.trigger_camera
+    data: {}
+    target:
+      entity_id: camera.blink_front_door
+  - service: camera.snapshot
+    data_template:
+      filename: /config/www/blink/blink_front_door_{{ now().strftime("%Y%m%d-%H%M%S")
+        }}.jpg
+    target:
+      entity_id: camera.blink_front_door
+  - service: camera.snapshot
+    data_template:
+      filename: /config/www/blink/camera.blink_front_door_now.jpg
+    target:
+      entity_id: camera.blink_front_door
+  - delay:
+      hours: 0
+      minutes: 2
+      seconds: 0
+      milliseconds: 0
+  - service: blink.trigger_camera
+    data: {}
+    target:
+      entity_id: camera.blink_garden_camera
+  - service: camera.snapshot
+    data_template:
+      filename: /config/www/blink/blink_garden_camera_{{ now().strftime("%Y%m%d-%H%M%S")
+        }}.jpg
+    target:
+      entity_id: camera.blink_garden_camera
+  - service: camera.snapshot
+    data_template:
+      filename: /config/www/blink/blink_garden_camera_now.jpg
+    target:
+      entity_id: camera.blink_garden_camera
+  - delay:
+      hours: 0
+      minutes: 2
+      seconds: 0
+      milliseconds: 0
+  - service: blink.blink_update
+    data: {}
+  mode: single
+- id: '1688768949634'
+  alias: 'Conservatory light on if movement '
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.conservatory_camera_cell_motion_detection_2
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+  condition:
+  - condition: sun
+    after: sunset
+    before: sunrise
+  action:
+  - type: turn_on
+    device_id: 4c16aa2e8ab360f59cef97034e418217
+    entity_id: 49124585207f7e62d8b71fcc7f6947f2
+    domain: light
+  - delay:
+      minutes: 2
+  - type: turn_off
+    device_id: 4c16aa2e8ab360f59cef97034e418217
+    entity_id: 49124585207f7e62d8b71fcc7f6947f2
+    domain: light
+  mode: single
+- id: '1689329658622'
+  alias: Back Door Open
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.door_sensor
+    to: 'on'
+  condition: []
+  action:
+  - service: notify.alexa_media
+    data:
+      message: The back door is open.
+      title: Your back door Friend
+      target:
+      - media_player.master_bedroom_echo
+      - media_player.downstairs_echo
+      - media_player.paul_s_2nd_alexa_app_for_pc
+      data:
+        type: tts
+  mode: single
+- id: '1689333385634'
+  alias: Evening Gas and Electric Notifications
+  description: Sends daily gas and electric cost notifications in the evening
+  trigger:
+  - platform: time
+    at: '17:00:00'
+  condition: []
+  action:
+  - service: notify.alexa_media
+    data:
+      message: 'Good evening! Here are today''s energy costs:
+
+
+        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today'') }}.
+
+
+        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today'')
+        }}
+
+        '
+      target:
+      - media_player.master_bedroom_echo
+      - media_player.downstairs_echo
+      - media_player.paul_s_2nd_alexa_app_for_pc
+      - media_player.office_echo
+      data:
+        type: tts
+  - service: notify.telegram_bot
+    data:
+      message: 'Good evening! Here are today''s energy costs:
+
+
+        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today'') }}.
+
+
+        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today'')
+        }}
+
+        '
+  - service: notify.mobile_app_paul_s_phone
+    data:
+      message: 'Good evening! Here are today''s energy costs:
+
+
+        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today'') }}.
+
+
+        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today'')
+        }}
+
+        '
+  - service: notify.email
+    data:
+      message: 'Good evening! Here are today''s energy costs:
+
+
+        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today'') }}.
+
+
+        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today'')
+        }}
+
+        '
+  mode: single
+- id: '1689339021550'
+  alias: Upload Configuration to GitHub
+  description: Automatically commits and pushes Home Assistant configuration changes
+    to GitHub when Home Assistant starts.
+  trigger:
+  - platform: homeassistant
+    event: start
+  action:
+  - service: shell_command.upload_config_to_github

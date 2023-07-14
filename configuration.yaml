@@ -10,7 +10,9 @@ group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
-
+homeassistant:
+  allowlist_external_dirs:
+    - "/tmp"
 # Switch configurations
 switch:
   - platform: wake_on_lan
