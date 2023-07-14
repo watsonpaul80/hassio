@@ -231,4 +231,4 @@ http:
     - 172.30.33.0/24
 
 shell_command:
-  pushupdates_to_github: /bin/bash pushupdates.sh
+  pushupdates_to_github: /bin/bash /config/pushupdates.sh
