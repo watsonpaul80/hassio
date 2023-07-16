@@ -15,8 +15,12 @@
   - service: alarm_control_panel.alarm_arm_away
     target:
       entity_id: alarm_control_panel.blink_house
+    data: {}
   - delay:
-      minutes: 2
+      hours: 0
+      minutes: 0
+      seconds: 30
+      milliseconds: 0
   - service: notify.mobile_app_paul_s_phone
     data:
       message: Hey Paul! Just wanted to let you know that the Blink alarm has been
