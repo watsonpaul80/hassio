@@ -159,10 +159,10 @@
       actions:
       - service: notify.mobile_app_paul_s_phone
         data:
-          message: Low battery detected.
+          message: '“low battery: {{ sensors}}”'
       - service: notify.telegram_bot
         data:
-          message: Low battery detected.
+          message: '“low battery: {{ sensors}}”'
   mode: single
 - id: '1686774938651'
   alias: Stale backup check
@@ -428,3 +428,12 @@
       level: error
       message: 'GitHub update attempt: {{ now().strftime("%Y-%m-%d %H:%M:%S") }}'
   mode: single
+- id: '1689761827401'
+  alias: Home Assistant Auto-update on a schedule base
+  description: ''
+  use_blueprint:
+    path: edwardtfn/auto_update_scheduled.yaml
+    input:
+      verbose_logging_bool: true
+      restart_bool: true
+      schedule_entity: schedule.update_schedule
