@@ -124,6 +124,7 @@
         data:
           message: Home Assistant update process initiated.
       schedule_entity: schedule.update_schedule
+      restart_bool: true
   mode: single
 - id: '1686173354607'
   alias: Disarm Blink
@@ -198,34 +199,6 @@
     data:
       message: Internet connection is down!
   mode: single
-- id: '1686780104225'
-  alias: If movement trigger outside light
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.conservatory_camera_cell_motion_detection_2
-    to: 'on'
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 0
-  condition:
-  - condition: sun
-    after: sunset
-    before: sunrise
-  action:
-  - type: turn_on
-    device_id: b11e5a8be43e648563eafe34653066d7
-    entity_id: c845cf7e7261566197341334093fba75
-    domain: switch
-  - delay:
-      minutes: 2
-  - type: turn_off
-    device_id: b11e5a8be43e648563eafe34653066d7
-    entity_id: switch.socket_7_socket
-    domain: switch
-  mode: single
 - id: '1688339061635'
   alias: 'Garden Light on for more then 10 minutes '
   description: ''
@@ -271,7 +244,7 @@
       entity_id: camera.blink_front_door
   - delay:
       hours: 0
-      minutes: 2
+      minutes: 3
       seconds: 0
       milliseconds: 0
   - service: blink.trigger_camera
@@ -291,7 +264,7 @@
       entity_id: camera.blink_garden_camera
   - delay:
       hours: 0
-      minutes: 2
+      minutes: 3
       seconds: 0
       milliseconds: 0
   - service: blink.blink_update
@@ -313,17 +286,38 @@
   - condition: sun
     after: sunset
     before: sunrise
+  - condition: device
+    type: is_off
+    device_id: b11e5a8be43e648563eafe34653066d7
+    entity_id: c845cf7e7261566197341334093fba75
+    domain: switch
+  - condition: device
+    type: is_off
+    device_id: 4c16aa2e8ab360f59cef97034e418217
+    entity_id: 49124585207f7e62d8b71fcc7f6947f2
+    domain: light
   action:
   - type: turn_on
     device_id: 4c16aa2e8ab360f59cef97034e418217
     entity_id: 49124585207f7e62d8b71fcc7f6947f2
     domain: light
+  - type: turn_on
+    device_id: b11e5a8be43e648563eafe34653066d7
+    entity_id: c845cf7e7261566197341334093fba75
+    domain: switch
   - delay:
-      minutes: 2
+      hours: 0
+      minutes: 3
+      seconds: 0
+      milliseconds: 0
   - type: turn_off
     device_id: 4c16aa2e8ab360f59cef97034e418217
     entity_id: 49124585207f7e62d8b71fcc7f6947f2
     domain: light
+  - type: turn_off
+    device_id: b11e5a8be43e648563eafe34653066d7
+    entity_id: c845cf7e7261566197341334093fba75
+    domain: switch
   mode: single
 - id: '1689329658622'
   alias: Back Door Open
@@ -428,12 +422,3 @@
       level: error
       message: 'GitHub update attempt: {{ now().strftime("%Y-%m-%d %H:%M:%S") }}'
   mode: single
-- id: '1689761827401'
-  alias: Home Assistant Auto-update on a schedule base
-  description: ''
-  use_blueprint:
-    path: edwardtfn/auto_update_scheduled.yaml
-    input:
-      verbose_logging_bool: true
-      restart_bool: true
-      schedule_entity: schedule.update_schedule
