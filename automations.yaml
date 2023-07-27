@@ -212,6 +212,15 @@
       hours: 0
       minutes: 20
       seconds: 0
+  - platform: device
+    type: turned_on
+    device_id: 4c16aa2e8ab360f59cef97034e418217
+    entity_id: 49124585207f7e62d8b71fcc7f6947f2
+    domain: light
+    for:
+      hours: 0
+      minutes: 20
+      seconds: 0
   condition: []
   action:
   - type: turn_off
@@ -283,9 +292,6 @@
       minutes: 0
       seconds: 0
   condition:
-  - condition: sun
-    after: sunset
-    before: sunrise
   - condition: device
     type: is_off
     device_id: b11e5a8be43e648563eafe34653066d7
@@ -296,6 +302,9 @@
     device_id: 4c16aa2e8ab360f59cef97034e418217
     entity_id: 49124585207f7e62d8b71fcc7f6947f2
     domain: light
+  - condition: sun
+    before: sunrise
+    after: sunset
   action:
   - type: turn_on
     device_id: 4c16aa2e8ab360f59cef97034e418217
@@ -421,4 +430,20 @@
     data:
       level: error
       message: 'GitHub update attempt: {{ now().strftime("%Y-%m-%d %H:%M:%S") }}'
+  mode: single
+- id: '1690464825109'
+  alias: Watchman
+  description: ''
+  trigger:
+  - platform: time
+    at: '10:00:00'
+  condition: []
+  action:
+  - service: watchman.report
+    data:
+      create_file: true
+      send_notification: true
+      parse_config: false
+      chunk_size: false
+      service: notify.email
   mode: single
