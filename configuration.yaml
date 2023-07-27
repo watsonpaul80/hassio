@@ -79,6 +79,12 @@ notify:
     name: 'Telegram Bot'
     chat_id: 1054773464
 
+  - name: group_notification
+    platform: group
+    services:
+    - service: email
+    - service: telegram
+
 # Recorder configurations
 recorder:
   db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
