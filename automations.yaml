@@ -445,5 +445,5 @@
       send_notification: true
       parse_config: false
       chunk_size: false
-      service: notify.email
+      service: notify.group_notification
   mode: single
