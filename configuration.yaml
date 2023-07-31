@@ -73,7 +73,7 @@ notify:
     username: !secret email_username
     password: !secret email_password
     recipient:
-      - !secret email_recipient
+    - !secret email_recipient
     sender_name: HASSIO
   - platform: telegram
     name: 'Telegram Bot'
