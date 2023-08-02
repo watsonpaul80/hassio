@@ -56,7 +56,6 @@ sensor:
       - type: processor_temperature
       - type: last_boot
 
-
 # InfluxDB configurations
 influxdb:
   host: a0d7b954-influxdb
