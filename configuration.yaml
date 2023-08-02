@@ -20,7 +20,6 @@ switch:
     host: 192.168.3.32
 
 # Sensor configurations
-# Example configuration.yaml entry with all entry types (delete/comment out as necessary)
 sensor:
   - platform: systemmonitor
     resources:
@@ -57,18 +56,6 @@ sensor:
       - type: processor_temperature
       - type: last_boot
 
-  - platform: template
-    sensors:
-      system_uptime:
-        friendly_name: "System Uptime"
-        value_template: >
-          {% set last_boot = states('sensor.last_boot') %}
-          {% set current_time = as_timestamp(now()) %}
-          {% set uptime_seconds = current_time - as_timestamp(last_boot) %}
-          {% set uptime_minutes = uptime_seconds // 60 %}
-          {% set uptime_hours = uptime_minutes // 60 %}
-          {% set uptime_days = uptime_hours // 24 %}
-          {{ "%d days %02d:%02d:%02d" | format(uptime_days, uptime_hours % 24, uptime_minutes % 60, uptime_seconds % 60) }}
 
 # InfluxDB configurations
 influxdb:
