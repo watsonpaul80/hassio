@@ -87,8 +87,8 @@ notify:
   - name: group_notification
     platform: group
     services:
-    - service: email
-    - service: Telegram Bot
+      - service: email
+      - service: telegram_bot
 
 # Recorder configurations
 recorder:
