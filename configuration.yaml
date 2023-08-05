@@ -81,14 +81,14 @@ notify:
     - !secret email_recipient
     sender_name: HASSIO
   - platform: telegram
-    name: 'Telegram Bot'
-    chat_id: 1054773464
+    name: Telegram Bot
+    chat_id: !secret telegram_allowed_chat_ids
 
   - name: group_notification
     platform: group
     services:
     - service: email
-    - service: telegram
+    - service: Telegram Bot
 
 # Recorder configurations
 recorder:
