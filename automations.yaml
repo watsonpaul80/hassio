@@ -447,3 +447,10 @@
       chunk_size: false
       service: notify.group_notification
   mode: single
+- id: '1691748663178'
+  alias: Home Assistant Auto-update on a schedule base
+  description: ''
+  use_blueprint:
+    path: edwardtfn/auto_update_scheduled.yaml
+    input:
+      schedule_entity: schedule.update_schedule
