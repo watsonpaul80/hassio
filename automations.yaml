@@ -108,24 +108,6 @@
     data:
       message: DNS turned off!
   mode: single
-- id: '1686060855141'
-  alias: Home Assistant Auto-update on a schedule basis
-  description: ''
-  use_blueprint:
-    path: edwardtfn/auto_update_scheduled.yaml
-    input:
-      verbose_logging_bool: true
-      schedule_monthday: 5
-      actions_pos_update:
-      - service: notify.mobile_app_paul_s_phone
-        data:
-          message: Home Assistant update process initiated.
-      - service: notify.telegram_bot
-        data:
-          message: Home Assistant update process initiated.
-      schedule_entity: schedule.update_schedule
-      restart_bool: true
-  mode: single
 - id: '1686173354607'
   alias: Disarm Blink
   description: ''
@@ -454,3 +436,47 @@
     path: edwardtfn/auto_update_scheduled.yaml
     input:
       schedule_entity: schedule.update_schedule
+      verbose_logging_bool: true
+- id: '1692348818029'
+  alias: Send a camera snapshot when motion is detected
+  description: Send a camera snapshot when motion is detected
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.conservatory_camera_cell_motion_detection_2
+    to: 'on'
+  condition:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: person.paul_watson
+      attribute: device_trackers
+      state: not_home
+      for:
+        hours: 0
+        minutes: 1
+        seconds: 0
+    - condition: time
+      after: '23:00:00'
+      before: 07:00:00
+      weekday:
+      - sun
+      - mon
+      - tue
+      - wed
+      - thu
+      - fri
+      - sat
+  action:
+  - service: notify.mobile_app_paul_s_phone
+    data:
+      message: '{{ notification_message }}'
+      title: '{{ notification_title }}'
+      data: '{% set android_data = {"image": "%s"} | format(''/local/tmp/snapshot_{{
+        states[camera.conservatory_camera_hd_stream_2].object_id }}.jpg'') %} {% set
+        ios_data = {"attachment": {"url": "%s", "content_type": "JPEG"}} | format(''/local/tmp/snapshot_{{
+        states[camera.conservatory_camera_hd_stream_2].object_id }}.jpg'') %} {{ ios_data
+        if is_ios else android_data }}
+
+        '
+  mode: single
