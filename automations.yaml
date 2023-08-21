@@ -1,43 +1,63 @@
 - id: '1620071993063'
-  alias: Arm Blink
-  description: Arms the Blink alarm system at sunset
+  alias: Arm Blink based on Presence and Sun Times
+  description: Arms the Blink alarm system based on presence and sun times
   trigger:
   - platform: sun
     event: sunset
     offset: 0
+  - platform: state
+    entity_id: person.paul_watson
   condition:
+  - condition: template
+    value_template: '{{ (as_timestamp(now()) - as_timestamp(state_attr(''automation.arm_blink'',
+      ''last_triggered''))) > 60 }}
+
+      '
   - condition: state
     entity_id: alarm_control_panel.blink_house
     state: disarmed
-  - condition: sun
-    after: sunset
+  - condition: or
+    conditions:
+    - condition: and
+      conditions:
+      - condition: sun
+        after: sunset
+      - condition: state
+        entity_id: person.paul_watson
+        state: home
+    - condition: and
+      conditions:
+      - condition: time
+        after: 07:00:00
+        before: '23:00:00'
+      - condition: state
+        entity_id: person.paul_watson
+        state: not_home
   action:
   - service: alarm_control_panel.alarm_arm_away
     target:
       entity_id: alarm_control_panel.blink_house
-    data: {}
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 30
-      milliseconds: 0
   - service: notify.mobile_app_paul_s_phone
     data:
-      message: Hey Paul! Just wanted to let you know that the Blink alarm has been
-        armed successfully.
-  - condition: time
-    after: 07:00:00
-    before: '23:00:00'
+      message: "{% if is_state('person.paul_watson', 'not_home') %}\n  The Blink alarm
+        has been armed because you are away.\n{% else %}\n  The Blink alarm has been
+        armed during sun times while you are at home.\n{% endif %}\n"
   - service: notify.alexa_media
     data:
-      message: The Blink alarm has been armed successfully.
+      message: "{% if is_state('person.paul_watson', 'not_home') %}\n  The Blink alarm
+        has been armed because you are away.\n{% else %}\n  The Blink alarm has been
+        armed during sun times while you are at home.\n{% endif %}\n"
       target:
       - media_player.master_bedroom_echo
       - media_player.downstairs_echo
       - media_player.paul_s_2nd_alexa_app_for_pc
       - media_player.office_echo
-      data:
-        type: tts
+  - service: notify.telegram_bot
+    data:
+      title: Blink Alarm Armed
+      message: "{% if is_state('person.paul_watson', 'not_home') %}\n  The Blink alarm
+        has been armed because you are away.\n{% else %}\n  The Blink alarm has been
+        armed during sun times while you are at home.\n{% endif %}\n"
   mode: single
 - id: '1672867600743'
   alias: Midnight Gas and Electric Notifications
@@ -110,28 +130,38 @@
   mode: single
 - id: '1686173354607'
   alias: Disarm Blink
-  description: ''
+  description: Disarms the Blink alarm system based on sunrise or presence
   trigger:
   - platform: sun
     event: sunrise
     offset: 0
+  - platform: state
+    entity_id: person.paul_watson
   condition:
+  - condition: or
+    conditions:
+    - condition: template
+      value_template: '{{ is_state(''sun.sun'', ''above_horizon'') }}'
+    - condition: state
+      entity_id: person.paul_watson
+      state: home
   - condition: state
     entity_id: alarm_control_panel.blink_house
     state: armed_away
   action:
   - service: alarm_control_panel.alarm_disarm
-    data: {}
     target:
       entity_id: alarm_control_panel.blink_house
-  - delay:
-      minutes: 2
   - service: notify.mobile_app_paul_s_phone
     data:
-      message: Blink alarm disarmed successfully.
+      message: "{% if is_state('sun.sun', 'above_horizon') %}\n  Blink alarm disarmed
+        successfully based on sunrise.\n{% else %}\n  Blink alarm disarmed successfully
+        because you arrived home.\n{% endif %}\n"
   - service: notify.telegram_bot
     data:
-      message: Blink alarm disarmed successfully.
+      message: "{% if is_state('sun.sun', 'above_horizon') %}\n  Blink alarm disarmed
+        successfully based on sunrise.\n{% else %}\n  Blink alarm disarmed successfully
+        because you arrived home.\n{% endif %}\n"
   mode: single
 - id: '1686317391934'
   alias: Low Battery
@@ -437,46 +467,18 @@
     input:
       schedule_entity: schedule.update_schedule
       verbose_logging_bool: true
-- id: '1692348818029'
-  alias: Send a camera snapshot when motion is detected
-  description: Send a camera snapshot when motion is detected
-  trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.conservatory_camera_cell_motion_detection_2
-    to: 'on'
+- id: '1692608180951'
+  alias: Send a camera snapshot if motion when armed
+  description: Send a camera snapshot when motion is detected, but only if the house
+    is armed
   condition:
-  - condition: or
-    conditions:
-    - condition: state
-      entity_id: person.paul_watson
-      attribute: device_trackers
-      state: not_home
-      for:
-        hours: 0
-        minutes: 1
-        seconds: 0
-    - condition: time
-      after: '23:00:00'
-      before: 07:00:00
-      weekday:
-      - sun
-      - mon
-      - tue
-      - wed
-      - thu
-      - fri
-      - sat
-  action:
-  - service: notify.mobile_app_paul_s_phone
-    data:
-      message: '{{ notification_message }}'
-      title: '{{ notification_title }}'
-      data: '{% set android_data = {"image": "%s"} | format(''/local/tmp/snapshot_{{
-        states[camera.conservatory_camera_hd_stream_2].object_id }}.jpg'') %} {% set
-        ios_data = {"attachment": {"url": "%s", "content_type": "JPEG"}} | format(''/local/tmp/snapshot_{{
-        states[camera.conservatory_camera_hd_stream_2].object_id }}.jpg'') %} {{ ios_data
-        if is_ios else android_data }}
-
-        '
-  mode: single
+  - condition: state
+    entity_id: alarm_control_panel.blink_house
+    state: armed
+  use_blueprint:
+    path: vorion/send-camera-snapshot-notification-on-motion.yaml
+    input:
+      motion_sensor: binary_sensor.conservatory_camera_cell_motion_detection_2
+      camera: camera.conservatory_camera_hd_stream_2
+      notify_device: 6d66651fd80e4ee9107be6c0a6a86ba8
+      delay: 5
