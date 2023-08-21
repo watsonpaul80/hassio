@@ -1,64 +1,43 @@
 - id: '1620071993063'
-  alias: Arm Blink based on Presence and Sun Times
-  description: Arms the Blink alarm system based on presence and sun times
+  alias: Arm Blink
+  description: Arms the Blink alarm system at sunset
   trigger:
   - platform: sun
     event: sunset
-  - platform: state
-    entity_id: person.paul_watson
+    offset: 0
   condition:
-  - condition: and
-    conditions:
-      - condition: or
-        conditions:
-          - condition: sun
-            after: sunset
-          - condition: time
-            after: '07:00:00'
-            before: '23:00:00'
-          - condition: state
-            entity_id: person.paul_watson
-            state: not_home
-      - condition: state
-        entity_id: person.paul_watson
-        state: home
   - condition: state
     entity_id: alarm_control_panel.blink_house
     state: disarmed
+  - condition: sun
+    after: sunset
   action:
   - service: alarm_control_panel.alarm_arm_away
     target:
       entity_id: alarm_control_panel.blink_house
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 30
+      milliseconds: 0
   - service: notify.mobile_app_paul_s_phone
     data:
-      message: >
-        {% if is_state('person.paul_watson', 'not_home') %}
-          The Blink alarm has been armed because you are away during nighttime.
-        {% else %}
-          The Blink alarm has been armed during nighttime while you are at home.
-        {% endif %}
+      message: Hey Paul! Just wanted to let you know that the Blink alarm has been
+        armed successfully.
+  - condition: time
+    after: 07:00:00
+    before: '23:00:00'
   - service: notify.alexa_media
     data:
-      message: >
-        {% if is_state('person.paul_watson', 'not_home') %}
-          The Blink alarm has been armed because you are away during nighttime.
-        {% else %}
-          The Blink alarm has been armed during nighttime while you are at home.
-        {% endif %}
+      message: The Blink alarm has been armed successfully.
       target:
-        - media_player.master_bedroom_echo
-        - media_player.downstairs_echo
-        - media_player.paul_s_2nd_alexa_app_for_pc
-        - media_player.office_echo
-  - service: notify.telegram_bot
-    data:
-      title: Blink Alarm Armed
-      message: >
-        {% if is_state('person.paul_watson', 'not_home') %}
-          The Blink alarm has been armed because you are away during nighttime.
-        {% else %}
-          The Blink alarm has been armed during nighttime while you are at home.
-        {% endif %}
+      - media_player.master_bedroom_echo
+      - media_player.downstairs_echo
+      - media_player.paul_s_2nd_alexa_app_for_pc
+      - media_player.office_echo
+      data:
+        type: tts
   mode: single
 
 
@@ -132,38 +111,29 @@
       message: DNS turned off!
   mode: single
 - id: '1686173354607'
-  alias: Disarm Blink when Arriving Home
-  description: Disarms the Blink alarm system when arriving home between 06:00 and sunset
+  alias: Disarm Blink
+  description: ''
   trigger:
-  - platform: state
-    entity_id: person.paul_watson
+  - platform: sun
+    event: sunrise
+    offset: 0
   condition:
-  - condition: and
-    conditions:
-      - condition: or
-        conditions:
-          - condition: template
-            value_template: "{{ now().time() > '07:00:00' }}"
-          - condition: and
-            conditions:
-              - condition: template
-                value_template: "{{ '06:00:00' <= now().time() <= state_attr('sun.sun', 'next_setting')[:8] }}"
-              - condition: state
-                entity_id: person.paul_watson
-                state: home
-      - condition: state
-        entity_id: alarm_control_panel.blink_house
-        state: armed_away
+  - condition: state
+    entity_id: alarm_control_panel.blink_house
+    state: armed_away
   action:
   - service: alarm_control_panel.alarm_disarm
+    data: {}
     target:
       entity_id: alarm_control_panel.blink_house
+  - delay:
+      minutes: 2
   - service: notify.mobile_app_paul_s_phone
     data:
-      message: Blink alarm disarmed successfully because you arrived home.
+      message: Blink alarm disarmed successfully.
   - service: notify.telegram_bot
     data:
-      message: Blink alarm disarmed successfully because you arrived home.
+      message: Blink alarm disarmed successfully.
   mode: single
 - id: '1686317391934'
   alias: Low Battery
