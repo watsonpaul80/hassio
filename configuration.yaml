@@ -18,6 +18,16 @@ switch:
   - platform: wake_on_lan
     mac: a8:a1:59:19:a8:db
     host: 192.168.3.32
+#AWS
+aws:
+  credentials:
+    - name: Paul AWS
+      aws_access_key_id: AWS_ID
+      aws_secret_access_key: AWS_SECRET
+  notify:
+    # use the first credential defined in aws integration by default
+    - service: lambda
+      region_name: us-east-1
 
 # Sensor configurations
 sensor:
@@ -56,6 +66,19 @@ sensor:
       - type: processor_temperature
       - type: last_boot
 
+  - platform: template
+    sensors:
+      system_uptime:
+        friendly_name: "System Uptime"
+        value_template: >
+          {% set last_boot = states('sensor.last_boot') %}
+          {% set current_time = as_timestamp(now()) %}
+          {% set uptime_seconds = current_time - as_timestamp(last_boot) %}
+          {% set uptime_minutes = uptime_seconds // 60 %}
+          {% set uptime_hours = uptime_minutes // 60 %}
+          {% set uptime_days = uptime_hours // 24 %}
+          {{ "%d days %02d:%02d:%02d" | format(uptime_days, uptime_hours % 24, uptime_minutes % 60, uptime_seconds % 60) }}
+
 # InfluxDB configurations
 influxdb:
   host: a0d7b954-influxdb
@@ -78,18 +101,35 @@ notify:
     username: !secret email_username
     password: !secret email_password
     recipient:
-    - !secret email_recipient
+      - !secret email_recipient
     sender_name: HASSIO
   - platform: telegram
-    name: Telegram Bot
-    chat_id: !secret telegram_allowed_chat_ids
+    name: 'Telegram Bot'
+    chat_id: 1054773464
+  - platform: alexa_media
+    name: 'Alexa Group'
+    target:
+      - media_player.master_bedroom_echo
+      - media_player.downstairs_echo
 
-  - name: group_notification
+  - name: group_telegram_and_email
     platform: group
     services:
-      - service: email
-      - service: telegram_bot
+    - service: email
+    - service: telegram
+  - name: group_alexa_and_telegram
+    platform: group
+    services:
+    - service: alexa_media
+    - service: telegram
 
+  - platform: alexa_media
+    name: 'Alexa Group'
+    target:
+      - media_player.master_bedroom_echo
+      - media_player.downstairs_echo
+      - media_player.paul_s_2nd_alexa_app_for_pc
+      - media_player.office_ech
 # Recorder configurations
 recorder:
   db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
@@ -208,7 +248,7 @@ mqtt:
           {{ value_json['gasmeter']['energy']['import']['day'] }}
         {% endif %}
       icon: "mdi:fire"
-   
+
     - name: "Smart Meter Gas: Import Unit Rate"
       unique_id: "smart_meter_gas_import_unit_rate"
       state_topic: "glow/441793504B04/SENSOR/gasmeter"
@@ -242,4 +282,4 @@ http:
     - 172.30.33.0/24
 
 shell_command:
-  pushupdates_to_github: /bin/bash /config/pushupdates.sh
+  upload_config_to_github: 'cd /config && git add . && git commit -m "Automated commit" && git push origin master'
