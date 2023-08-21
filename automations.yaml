@@ -4,34 +4,27 @@
   trigger:
   - platform: sun
     event: sunset
-    offset: 0
-  - platform: sun
-    event: sunrise
-    offset: 0
   - platform: state
     entity_id: person.paul_watson
   condition:
-  - condition: template
-    value_template: >
-      {{ (as_timestamp(now()) - as_timestamp(state_attr('automation.arm_blink', 'last_triggered'))) > 60 }}
-  - condition: or
+  - condition: and
     conditions:
-      - condition: and
+      - condition: or
         conditions:
           - condition: sun
             after: sunset
-            before: sunrise
-          - condition: state
-            entity_id: person.paul_watson
-            state: not_home
-      - condition: and
-        conditions:
           - condition: time
             after: '07:00:00'
             before: '23:00:00'
           - condition: state
             entity_id: person.paul_watson
             state: not_home
+      - condition: state
+        entity_id: person.paul_watson
+        state: home
+  - condition: state
+    entity_id: alarm_control_panel.blink_house
+    state: disarmed
   action:
   - service: alarm_control_panel.alarm_arm_away
     target:
@@ -40,17 +33,17 @@
     data:
       message: >
         {% if is_state('person.paul_watson', 'not_home') %}
-          The Blink alarm has been armed because you are away.
+          The Blink alarm has been armed because you are away during nighttime.
         {% else %}
-          The Blink alarm has been armed during night time while you are at home.
+          The Blink alarm has been armed during nighttime while you are at home.
         {% endif %}
   - service: notify.alexa_media
     data:
       message: >
         {% if is_state('person.paul_watson', 'not_home') %}
-          The Blink alarm has been armed because you are away.
+          The Blink alarm has been armed because you are away during nighttime.
         {% else %}
-          The Blink alarm has been armed during night time while you are at home.
+          The Blink alarm has been armed during nighttime while you are at home.
         {% endif %}
       target:
         - media_player.master_bedroom_echo
@@ -62,11 +55,12 @@
       title: Blink Alarm Armed
       message: >
         {% if is_state('person.paul_watson', 'not_home') %}
-          The Blink alarm has been armed because you are away.
+          The Blink alarm has been armed because you are away during nighttime.
         {% else %}
-          The Blink alarm has been armed during night time while you are at home.
+          The Blink alarm has been armed during nighttime while you are at home.
         {% endif %}
   mode: single
+
 
 - id: '1672867600743'
   alias: Midnight Gas and Electric Notifications
@@ -138,47 +132,39 @@
       message: DNS turned off!
   mode: single
 - id: '1686173354607'
-  alias: Disarm Blink
-  description: Disarms the Blink alarm system based on sunrise or presence
+  alias: Disarm Blink when Arriving Home
+  description: Disarms the Blink alarm system when arriving home between 06:00 and sunset
   trigger:
-  - platform: sun
-    event: sunrise
-    offset: 0
   - platform: state
     entity_id: person.paul_watson
   condition:
-  - condition: or
+  - condition: and
     conditions:
-    - condition: sun
-      after: sunrise
-    - condition: state
-      entity_id: person.paul_watson
-      state: home
-  - condition: state
-    entity_id: alarm_control_panel.blink_house
-    state: armed_away
+      - condition: or
+        conditions:
+          - condition: template
+            value_template: "{{ now().time() > '07:00:00' }}"
+          - condition: and
+            conditions:
+              - condition: template
+                value_template: "{{ '06:00:00' <= now().time() <= state_attr('sun.sun', 'next_setting')[:8] }}"
+              - condition: state
+                entity_id: person.paul_watson
+                state: home
+      - condition: state
+        entity_id: alarm_control_panel.blink_house
+        state: armed_away
   action:
   - service: alarm_control_panel.alarm_disarm
     target:
       entity_id: alarm_control_panel.blink_house
   - service: notify.mobile_app_paul_s_phone
     data:
-      message: >
-        {% if is_state('sun.sun', 'above_horizon') %}
-          Blink alarm disarmed successfully based on sunrise.
-        {% else %}
-          Blink alarm disarmed successfully because you arrived home.
-        {% endif %}
+      message: Blink alarm disarmed successfully because you arrived home.
   - service: notify.telegram_bot
     data:
-      message: >
-        {% if is_state('sun.sun', 'above_horizon') %}
-          Blink alarm disarmed successfully based on sunrise.
-        {% else %}
-          Blink alarm disarmed successfully because you arrived home.
-        {% endif %}
+      message: Blink alarm disarmed successfully because you arrived home.
   mode: single
-
 - id: '1686317391934'
   alias: Low Battery
   description: ''
