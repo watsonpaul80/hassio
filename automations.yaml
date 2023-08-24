@@ -39,8 +39,6 @@
       data:
         type: tts
   mode: single
-
-
 - id: '1672867600743'
   alias: Midnight Gas and Electric Notifications
   description: Sends daily gas and electric cost notifications at midnight
@@ -404,7 +402,7 @@
     event: start
   condition: []
   action:
-  - service: shell_command.pushupdates_to_github
+  - service: shell_command.upload_config_to_github
     data: {}
   - service: persistent_notification.create
     data:
@@ -429,7 +427,7 @@
       send_notification: true
       parse_config: false
       chunk_size: false
-      service: group_telegram_and_email
+      service: notify.group_telegram_and_email
   mode: single
 - id: '1691748663178'
   alias: Home Assistant Auto-update on a schedule base
