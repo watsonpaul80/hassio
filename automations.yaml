@@ -437,18 +437,3 @@
     input:
       schedule_entity: schedule.update_schedule
       verbose_logging_bool: true
-- id: '1692608180951'
-  alias: Send a camera snapshot if motion when armed
-  description: Send a camera snapshot when motion is detected, but only if the house
-    is armed
-  condition:
-  - condition: state
-    entity_id: alarm_control_panel.blink_house
-    state: armed
-  use_blueprint:
-    path: vorion/send-camera-snapshot-notification-on-motion.yaml
-    input:
-      motion_sensor: binary_sensor.conservatory_camera_cell_motion_detection_2
-      camera: camera.conservatory_camera_hd_stream_2
-      notify_device: 6d66651fd80e4ee9107be6c0a6a86ba8
-      delay: 5
