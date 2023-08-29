@@ -228,12 +228,11 @@ mqtt:
       unit_of_measurement: "kWh"
       state_class: "measurement"
       value_template: >
-        {% if value_json['gasmeter']['energy']['import']['day'] == "unknown" %}
-        0  # Set to 0 when day import is unknown
-        {% elif value_json['gasmeter']['energy']['import']['day'] == 0 and now() > now().replace(hour=0).replace(minute=1).replace(second=0).replace(microsecond=0) %}
-        {{ states('sensor.smart_meter_gas_import_today') }}
+        {% if value_json['gasmeter']['energy']['import']['day'] == 0 
+          and now() > now().replace(hour=0).replace(minute=1).replace(second=0).replace(microsecond=0) %}
+          {{ states('sensor.smart_meter_gas_import_today') }}
         {% else %}
-        {{ value_json['gasmeter']['energy']['import']['day'] }}
+          {{ value_json['gasmeter']['energy']['import']['day'] }}
         {% endif %}
       icon: "mdi:fire"
 
