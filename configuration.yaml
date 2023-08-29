@@ -230,11 +230,11 @@ mqtt:
       value_template: >
         {% if value_json['gasmeter']['energy']['import']['day'] == "unknown" %}
         0  # Set to 0 when day import is unknown
-            {% elif value_json['gasmeter']['energy']['import']['day'] == 0 and now() > now().replace(hour=0).replace(minute=1).replace(second=0).replace(microsecond=0) %}
+        {% elif value_json['gasmeter']['energy']['import']['day'] == 0 and now() > now().replace(hour=0).replace(minute=1).replace(second=0).replace(microsecond=0) %}
         {{ states('sensor.smart_meter_gas_import_today') }}
-              {% else %}
+        {% else %}
         {{ value_json['gasmeter']['energy']['import']['day'] }}
-         {% endif %}
+        {% endif %}
       icon: "mdi:fire"
 
     - name: "Smart Meter Gas: Import Unit Rate"
