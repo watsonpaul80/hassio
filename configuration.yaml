@@ -83,6 +83,31 @@ sensor:
           {% set uptime_hours = uptime_minutes // 60 %}
           {% set uptime_days = uptime_hours // 24 %}
           {{ "%d days %02d:%02d:%02d" | format(uptime_days, uptime_hours % 24, uptime_minutes % 60, uptime_seconds % 60) }}
+    #MariaDB Database Sensor, replace Database name in querry
+  - platform: sql
+    db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
+    scan_interval: 3600
+    queries:
+      - name: MariaDB Database Size
+        query: 'SELECT table_schema "homeassistant", Round(Sum(data_length + index_length) / POWER(1024,2), 1) "value" FROM information_schema.tables WHERE table_schema="homeassistant" GROUP BY table_schema;'
+        column: "value"
+        unit_of_measurement: MB
+  #InfluxDB Database Sensor
+  - platform: influxdb
+    host: a0d7b954-influxdb #Internal IP of Home Assistant
+    port: 8086 #Access Port 
+    username: username !secret influxdb_username
+    password: password !secret influxdb_password
+    scan_interval: 3600
+    queries:
+      - name: InfluxDB Database Size
+        unit_of_measurement: MB
+        value_template: "{{ (value | float(0) / 1024 /1024) | round(1) }}"
+        group_function: sum
+        measurement: '"monitor"."shard"'
+        database: _internal
+        where: '"database"=''homeassistant'' AND time > now() - 5m'
+        field: diskBytes
 
 # InfluxDB configurations
 influxdb:
@@ -138,7 +163,7 @@ notify:
 # Recorder configurations
 recorder:
   db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
-
+  commit_interval: 20
 # Energy Costs
 template:
   sensor:
