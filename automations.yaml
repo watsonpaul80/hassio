@@ -309,6 +309,13 @@
     device_id: b11e5a8be43e648563eafe34653066d7
     entity_id: c845cf7e7261566197341334093fba75
     domain: switch
+  - service: input_number.increment
+    target:
+        entity_id: input_number.automation_run_count
+  - service: input_number.set_value
+    data_template:
+        entity_id: input_number.light_on_minutes
+        value: "{{ (states('input_number.light_on_minutes') | int) + 3 }}" # Adjust the value based on your delay time
   mode: single
 - id: '1689329658622'
   alias: Back Door Open
