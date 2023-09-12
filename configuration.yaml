@@ -90,7 +90,7 @@ sensor:
 # Database Sensors
   - platform: sql
     db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
-    scan_interval: 3600
+    scan_interval: 600
     queries:
       - name: MariaDB Database Size
         query: 'SELECT table_schema "homeassistant", Round(Sum(data_length + index_length) / POWER(1024,2), 1) "value" FROM information_schema.tables WHERE table_schema="homeassistant" GROUP BY table_schema;'
@@ -102,7 +102,7 @@ sensor:
     port: 8086
     username: !secret influxdb_username
     password: !secret influxdb_password
-    scan_interval: 3600
+    scan_interval: 600
     queries:
       - name: InfluxDB Database Size
         unit_of_measurement: MB
