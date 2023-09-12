@@ -170,15 +170,15 @@ recorder:
   db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
   commit_interval: 20
   exclude:
-  domains:
-    - update
-  entity_globs:
+    domains:
+      - update
+    entity_globs:
       - sensor.sun*
       - weather.*
-  entities:
-    - sensor.date
-    - sensor.last_boot # Comes from 'systemmonitor' sensor platform
-    - sun.sun # Don't record sun data
+    entities:
+      - sensor.date
+      - sensor.last_boot # Comes from 'systemmonitor' sensor platform
+      - sun.sun # Don't record sun data
 
 
 # Energy Costs
