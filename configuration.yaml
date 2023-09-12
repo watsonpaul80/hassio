@@ -1,24 +1,28 @@
-# Configure a default setup of Home Assistant (frontend, api, etc)
+# Home Assistant Configuration
 default_config:
 
-# Text to speech
+# Text to Speech
 tts:
   - platform: google_translate
 
-# Group configurations
+# Group Configurations
 group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+
+# Home Assistant Configuration
 homeassistant:
   allowlist_external_dirs:
     - "/tmp"
-# Switch configurations
+
+# Switch Configurations
 switch:
   - platform: wake_on_lan
     mac: a8:a1:59:19:a8:db
     host: 192.168.3.32
-  
+
+# Input Number Configurations
 input_number:
   automation_run_count:
     name: Automation Run Count
@@ -33,8 +37,7 @@ input_number:
     max: 99999
     step: 1
 
-
-# Sensor configurations
+# Sensor Configurations
 sensor:
   - platform: systemmonitor
     resources:
@@ -83,7 +86,8 @@ sensor:
           {% set uptime_hours = uptime_minutes // 60 %}
           {% set uptime_days = uptime_hours // 24 %}
           {{ "%d days %02d:%02d:%02d" | format(uptime_days, uptime_hours % 24, uptime_minutes % 60, uptime_seconds % 60) }}
-    #MariaDB Database Sensor, replace Database name in querry
+
+# Database Sensors
   - platform: sql
     db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
     scan_interval: 3600
@@ -92,12 +96,12 @@ sensor:
         query: 'SELECT table_schema "homeassistant", Round(Sum(data_length + index_length) / POWER(1024,2), 1) "value" FROM information_schema.tables WHERE table_schema="homeassistant" GROUP BY table_schema;'
         column: "value"
         unit_of_measurement: MB
-  #InfluxDB Database Sensor
+
   - platform: influxdb
-    host: a0d7b954-influxdb #Internal IP of Home Assistant
-    port: 8086 #Access Port 
-    username: username !secret influxdb_username
-    password: password !secret influxdb_password
+    host: a0d7b954-influxdb
+    port: 8086
+    username: !secret influxdb_username
+    password: !secret influxdb_password
     scan_interval: 3600
     queries:
       - name: InfluxDB Database Size
@@ -109,7 +113,7 @@ sensor:
         where: '"database"=''homeassistant'' AND time > now() - 5m'
         field: diskBytes
 
-# InfluxDB configurations
+# InfluxDB Configuration
 influxdb:
   host: a0d7b954-influxdb
   port: 8086
@@ -119,7 +123,7 @@ influxdb:
   max_retries: 3
   default_measurement: state
 
-# Notify configurations
+# Notify Configurations
 notify:
   - name: email
     platform: smtp
@@ -160,10 +164,12 @@ notify:
       - media_player.downstairs_echo
       - media_player.paul_s_2nd_alexa_app_for_pc
       - media_player.office_ech
-# Recorder configurations
+
+# Recorder Configuration
 recorder:
   db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
   commit_interval: 20
+
 # Energy Costs
 template:
   sensor:
@@ -193,7 +199,7 @@ template:
 
 # MQTT Sensors
 mqtt:
-  sensor:  
+  sensor:
     - name: "Smart Meter Electricity: Import"
       unique_id: "smart_meter_electricity_import"
       state_topic: "glow/441793504B04/SENSOR/electricitymeter"
@@ -282,17 +288,18 @@ mqtt:
       state_class: "measurement"
       value_template: "{{ value_json['gasmeter']['energy']['import']['price']['standingcharge'] }}"
       icon: "mdi:cash"
-# Alexa configurations
+
+# Alexa Configuration
 alexa:
   smart_home:
 
-# Telegram Bot configurations
+# Telegram Bot Configuration
 telegram_bot:
   - platform: polling
     api_key: !secret telegram_api_key
     allowed_chat_ids: !secret telegram_allowed_chat_ids
 
-# HTTP configurations
+# HTTP Configuration
 http:
   use_x_forwarded_for: true
   trusted_proxies:
@@ -300,5 +307,6 @@ http:
   ip_ban_enabled: true
   login_attempts_threshold: 5
 
+# Shell Command
 shell_command:
   upload_config_to_github: 'cd /config && git add . && git commit -m "Automated commit" && git push origin master'
