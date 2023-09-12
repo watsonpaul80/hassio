@@ -19,6 +19,20 @@ switch:
     mac: a8:a1:59:19:a8:db
     host: 192.168.3.32
   
+input_number:
+  automation_run_count:
+    name: Automation Run Count
+    initial: 0
+    min: 0
+    max: 99999
+    step: 1
+  light_on_minutes:
+    name: Total Minutes Light On
+    initial: 0
+    min: 0
+    max: 99999
+    step: 1
+
 
 # Sensor configurations
 sensor:
