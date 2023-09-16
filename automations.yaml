@@ -311,11 +311,11 @@
     domain: switch
   - service: input_number.increment
     target:
-        entity_id: input_number.automation_run_count
+      entity_id: input_number.automation_run_count
   - service: input_number.set_value
     data_template:
-        entity_id: input_number.light_on_minutes
-        value: "{{ (states('input_number.light_on_minutes') | int) + 3 }}" # Adjust the value based on your delay time
+      entity_id: input_number.light_on_minutes
+      value: '{{ (states(''input_number.light_on_minutes'') | int) + 3 }}'
   mode: single
 - id: '1689329658622'
   alias: Back Door Open
@@ -444,3 +444,19 @@
     input:
       schedule_entity: schedule.update_schedule
       verbose_logging_bool: true
+- id: '1694685095232'
+  alias: Repack DB Every Sunday
+  description: Repack DB Every Sunday
+  trigger:
+  - platform: time
+    at: '23:00:00'
+  condition:
+  - condition: time
+    weekday:
+    - sun
+  action:
+  - service: recorder.purge
+    data:
+      repack: true
+      keep_days: 7
+  mode: single
