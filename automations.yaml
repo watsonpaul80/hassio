@@ -267,7 +267,7 @@
   trigger:
   - platform: state
     entity_id:
-    - binary_sensor.conservatory_camera_cell_motion_detection_2
+    - binary_sensor.conservatory_camera_cell_motion_detection_3
     to: 'on'
     for:
       hours: 0
@@ -312,6 +312,7 @@
   - service: input_number.increment
     target:
       entity_id: input_number.automation_run_count
+    data: {}
   - service: input_number.set_value
     data_template:
       entity_id: input_number.light_on_minutes
