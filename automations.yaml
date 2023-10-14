@@ -267,7 +267,7 @@
   trigger:
   - platform: state
     entity_id:
-    - binary_sensor.conservatory_camera_cell_motion_detection_3
+    - binary_sensor.conservatory_camera_cell_motion_detection
     to: 'on'
     for:
       hours: 0
