@@ -164,23 +164,6 @@
     data:
       message: Backups are not up to date!
   mode: single
-- id: '1687203418525'
-  alias: WAN Port down
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - sensor.honor_router_3_wan_status
-    to: unavailable
-  condition: []
-  action:
-  - service: notify.telegram_bot
-    data:
-      message: Internet connection is down!
-  - service: notify.mobile_app_paul_s_phone
-    data:
-      message: Internet connection is down!
-  mode: single
 - id: '1688339061635'
   alias: 'Garden Light on for more then 10 minutes '
   description: ''
