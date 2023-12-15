@@ -442,5 +442,4 @@
   - service: recorder.purge
     data:
       repack: true
-      keep_days: 6
   mode: single
