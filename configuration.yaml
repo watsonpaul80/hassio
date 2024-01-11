@@ -277,14 +277,6 @@ telegram_bot:
     api_key: !secret telegram_api_key
     allowed_chat_ids: !secret telegram_allowed_chat_ids
 
-# HTTP Configuration
-http:
-  use_x_forwarded_for: true
-  trusted_proxies:
-    - 172.30.33.0/24
-  ip_ban_enabled: true
-  login_attempts_threshold: 5
-
 # Shell Command
 shell_command:
   upload_config_to_github: 'cd /config && git add . && git commit -m "Automated commit" && git push origin master'
