@@ -443,3 +443,24 @@
     data:
       repack: true
   mode: single
+- id: '1705519450000'
+  alias: Turn off bird heater
+  description: ''
+  trigger:
+  - platform: device
+    type: turned_on
+    device_id: 2c1e9caf93af2f6360433eb5011d42d6
+    entity_id: e8f1fba56a69f522e5b13d18149fd4c0
+    domain: switch
+  condition: []
+  action:
+  - delay:
+      hours: 0
+      minutes: 10
+      seconds: 0
+      milliseconds: 0
+  - type: turn_off
+    device_id: 2c1e9caf93af2f6360433eb5011d42d6
+    entity_id: e8f1fba56a69f522e5b13d18149fd4c0
+    domain: switch
+  mode: single
