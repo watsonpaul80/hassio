@@ -21,10 +21,6 @@
       minutes: 0
       seconds: 30
       milliseconds: 0
-  - service: notify.mobile_app_paul_s_phone
-    data:
-      message: Hey Paul! Just wanted to let you know that the Blink alarm has been
-        armed successfully.
   - condition: time
     after: 07:00:00
     before: '23:00:00'
@@ -48,16 +44,6 @@
   condition: []
   action:
   - service: notify.telegram_bot
-    data:
-      message: 'Good morning! Here are today''s energy costs:
-
-        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today'') }}.
-
-        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today'')
-        }}
-
-        '
-  - service: notify.mobile_app_paul_s_phone
     data:
       message: 'Good morning! Here are today''s energy costs:
 
@@ -126,9 +112,6 @@
       entity_id: alarm_control_panel.blink_house
   - delay:
       minutes: 2
-  - service: notify.mobile_app_paul_s_phone
-    data:
-      message: Blink alarm disarmed successfully.
   - service: notify.telegram_bot
     data:
       message: Blink alarm disarmed successfully.
@@ -140,9 +123,6 @@
     path: gmlupatelli/low_battery_notification.yaml
     input:
       actions:
-      - service: notify.mobile_app_paul_s_phone
-        data:
-          message: '“low battery: {{ sensors}}”'
       - service: notify.telegram_bot
         data:
           message: '“low battery: {{ sensors}}”'
@@ -349,18 +329,6 @@
       data:
         type: tts
   - service: notify.telegram_bot
-    data:
-      message: 'Good evening! Here are today''s energy costs:
-
-
-        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today'') }}.
-
-
-        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today'')
-        }}
-
-        '
-  - service: notify.mobile_app_paul_s_phone
     data:
       message: 'Good evening! Here are today''s energy costs:
 
