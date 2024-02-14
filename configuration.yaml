@@ -53,35 +53,39 @@ sensor:
           {{ "%d days %02d:%02d:%02d" | format(uptime_days, uptime_hours % 24, uptime_minutes % 60, uptime_seconds % 60) }}
   - platform: template
     sensors:
-      average_indoor_temperature:
-        friendly_name: "Average Indoor Temperature"
+      average_indoor_temperature_conservatory:
+        friendly_name: "Average Indoor Temperature Conservatory"
         value_template: "{{ states('sensor.wifiwen_shi_du_temperature') }}"
         unit_of_measurement: "°C"
-      average_outdoor_temperature:
-        friendly_name: "Average Outdoor Temperature"
+      average_outdoor_temperature_conservatory:
+        friendly_name: "Average Outdoor Temperature Conservatory"
         value_template: "{{ state_attr('weather.home', 'temperature') }}"
         unit_of_measurement: "°C"
-      temperature_difference:
-        friendly_name: "Temperature Difference"
-        value_template: "{{ states('sensor.average_indoor_temperature') | float - states('sensor.average_outdoor_temperature') | float }}"
+      temperature_difference_conservatory:
+        friendly_name: "Temperature Difference Conservatory"
+        value_template: "{{ states('sensor.average_indoor_temperature_conservatory') | float - states('sensor.average_outdoor_temperature_conservatory') | float }}"
         unit_of_measurement: "°C"
-      estimated_heat_loss:
-        friendly_name: "Conservatory Heat Loss"  # Rename according to your preference
-        value_template: "{{ states('sensor.temperature_difference') | float }}"
+      estimated_heat_loss_conservatory:
+        friendly_name: "Conservatory Heat Loss"
+        value_template: "{{ states('sensor.temperature_difference_conservatory') | float }}"
         unit_of_measurement: "°C"
   - platform: template
     sensors:
-      average_indoor_temperature:
-        friendly_name: "Average Indoor Temperature"
-        value_template: "{{ states('living_room_temperature_temperature') }}"
+      average_indoor_temperature_living_room:
+        friendly_name: "Average Indoor Temperature Living Room"
+        value_template: "{{ states('sensor.living_room_temperature_temperature') }}"
         unit_of_measurement: "°C"
-      temperature_difference:
-        friendly_name: "Temperature Difference"
-        value_template: "{{ states('sensor.average_indoor_temperature') | float - states('sensor.average_outdoor_temperature') | float }}"
+      average_outdoor_temperature_living_room:
+        friendly_name: "Average Outdoor Temperature Living Room"
+        value_template: "{{ state_attr('weather.home', 'temperature') }}"
         unit_of_measurement: "°C"
-      estimated_heat_loss:
-        friendly_name: "Living Room Heat Loss"  # Rename according to your preference
-        value_template: "{{ states('sensor.temperature_difference') | float }}"
+      temperature_difference_living_room:
+        friendly_name: "Temperature Difference Living Room"
+        value_template: "{{ states('sensor.average_indoor_temperature_living_room') | float - states('sensor.average_outdoor_temperature_living_room') | float }}"
+        unit_of_measurement: "°C"
+      estimated_heat_loss_living_room:
+        friendly_name: "Living Room Heat Loss"
+        value_template: "{{ states('sensor.temperature_difference_living_room') | float }}"
         unit_of_measurement: "°C"
 
 
