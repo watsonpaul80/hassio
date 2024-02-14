@@ -84,8 +84,6 @@ sensor:
         value_template: "{{ states('sensor.temperature_difference') | float }}"
         unit_of_measurement: "°C"
 
-
-
 # Database Sensors
   - platform: sql
     db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
@@ -95,7 +93,6 @@ sensor:
         query: 'SELECT table_schema "homeassistant", Round(Sum(data_length + index_length) / POWER(1024,2), 1) "value" FROM information_schema.tables WHERE table_schema="homeassistant" GROUP BY table_schema;'
         column: "value"
         unit_of_measurement: MB
-
   - platform: influxdb
     host: a0d7b954-influxdb
     port: 8086
@@ -178,7 +175,6 @@ recorder:
       - sensor.date
       - sensor.last_boot # Comes from 'systemmonitor' sensor platform
       - sun.sun # Don't record sun data
-
 
 # Energy Costs
 template:
@@ -303,7 +299,6 @@ mqtt:
       value_template: "{{ value_json['gasmeter']['energy']['import']['price']['standingcharge'] }}"
       icon: "mdi:cash"
 
-
 # Alexa Configuration
 alexa:
   smart_home:
@@ -313,6 +308,7 @@ telegram_bot:
   - platform: polling
     api_key: !secret telegram_api_key
     allowed_chat_ids: !secret telegram_allowed_chat_ids
+
 # HTTP Configuration
 http:
   use_x_forwarded_for: true
