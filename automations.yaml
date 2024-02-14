@@ -130,7 +130,7 @@
   trigger:
   - platform: state
     entity_id:
-    - binary_sensor.backups_stale
+    - sensor.backup_state
     to: 'on'
   condition: []
   action:
