@@ -79,11 +79,11 @@ sensor:
         friendly_name: "Average Outdoor Temperature"
         value_template: "{{ state_attr('weather.home', 'temperature') }}"
         unit_of_measurement: "°C"
-    temperature_difference:
+      temperature_difference:
         friendly_name: "Temperature Difference"
         value_template: "{{ states('sensor.average_indoor_temperature') | float - states('sensor.average_outdoor_temperature') | float }}"
         unit_of_measurement: "°C"
-    estimated_heat_loss:
+      estimated_heat_loss:
         friendly_name: "Living Room Heat Loss"  # Rename according to your preference
         value_template: "{{ states('sensor.temperature_difference') | float }}"
         unit_of_measurement: "°C"
