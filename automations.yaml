@@ -124,23 +124,6 @@
         data:
           message: '“low battery: {{ sensors}}”'
   mode: single
-- id: '1686774938651'
-  alias: Stale backup check
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - sensor.backup_state
-    to: 'on'
-  condition: []
-  action:
-  - service: notify.telegram_bot
-    data:
-      message: Backups are not up to date!
-  - service: notify.mobile_app_paul_s_phone
-    data:
-      message: Backups are not up to date!
-  mode: single
 - id: '1688339061635'
   alias: 'Garden Light on for more than 10 minutes '
   description: ''
