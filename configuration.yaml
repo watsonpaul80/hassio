@@ -71,22 +71,22 @@ sensor:
         unit_of_measurement: "°C"
   - platform: template
     sensors:
-    average_indoor_temperature:
-      friendly_name: "Average Indoor Temperature"
-      value_template: "{{ states('sensor.living_room_temperature_temperature') }}"
-      unit_of_measurement: "°C"
-    average_outdoor_temperature:
-      friendly_name: "Average Outdoor Temperature"
-      value_template: "{{ state_attr('weather.home', 'temperature') }}"
-      unit_of_measurement: "°C"
+      average_indoor_temperature:
+        friendly_name: "Average Indoor Temperature"
+        value_template: "{{ states('sensor.living_room_temperature_temperature') }}"
+        unit_of_measurement: "°C"
+      average_outdoor_temperature:
+        friendly_name: "Average Outdoor Temperature"
+        value_template: "{{ state_attr('weather.home', 'temperature') }}"
+        unit_of_measurement: "°C"
     temperature_difference:
-      friendly_name: "Temperature Difference"
-      value_template: "{{ states('sensor.average_indoor_temperature') | float - states('sensor.average_outdoor_temperature') | float }}"
-      unit_of_measurement: "°C"
+        friendly_name: "Temperature Difference"
+        value_template: "{{ states('sensor.average_indoor_temperature') | float - states('sensor.average_outdoor_temperature') | float }}"
+        unit_of_measurement: "°C"
     estimated_heat_loss:
-      friendly_name: "Living Room Heat Loss"  # Rename according to your preference
-      value_template: "{{ states('sensor.temperature_difference') | float }}"
-      unit_of_measurement: "°C"
+        friendly_name: "Living Room Heat Loss"  # Rename according to your preference
+        value_template: "{{ states('sensor.temperature_difference') | float }}"
+        unit_of_measurement: "°C"
 
 
 # Database Sensors
