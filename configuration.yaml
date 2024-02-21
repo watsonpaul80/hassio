@@ -46,25 +46,33 @@ sensor:
         value_template: >
           {{ state_attr('sensor.last_boot', 'uptime') }}
 
-      average_indoor_temperature:
-        friendly_name: "Average Indoor Temperature"
-        unit_of_measurement: "°C"
-        value_template: "{{ states('sensor.wifiwen_shi_du_temperature') }}"
-
       average_outdoor_temperature:
         friendly_name: "Average Outdoor Temperature"
         unit_of_measurement: "°C"
         value_template: "{{ state_attr('weather.home', 'temperature') }}"
 
-      temperature_difference:
-        friendly_name: "Temperature Difference"
+      temperature_difference_conservatory:
+        friendly_name: "Temperature Difference Conservatory"
         unit_of_measurement: "°C"
-        value_template: "{{ states('sensor.average_indoor_temperature') | float - states('sensor.average_outdoor_temperature') | float }}"
+        value_template: "{{ states('sensor.average_indoor_conservatory_temperature') | float - states('sensor.average_outdoor_temperature') | float }}"
 
-      estimated_heat_loss:
-        friendly_name: "Estimated Heat Loss"
+      estimated_heat_loss_conservatory:
+        friendly_name: "Conservatory Heat Loss"
         unit_of_measurement: "°C"
-        value_template: "{{ states('sensor.temperature_difference') | float }}"
+        value_template: "{{ states('sensor.temperature_difference_conservatory') | float }}"
+      average_indoor_living_room_temperature:
+        friendly_name: "Average Indoor Living Room Temperature"
+        unit_of_measurement: "°C"
+        value_template: "{{ states('sensor.living_room_temperature_temperature') }}"
+      temperature_difference_living_room:
+        friendly_name: "Temperature Difference Living Room"
+        unit_of_measurement: "°C"
+        value_template: "{{ states('sensor.average_indoor_living_room_temperature') | float - states('sensor.average_outdoor_temperature') | float }}"
+
+      estimated_heat_loss_living_room:
+        friendly_name: "Living Room Heat Loss"
+        unit_of_measurement: "°C"
+        value_template: "{{ states('sensor.temperature_difference_living_room') | float }}"  
 
 # Database Sensors
   - platform: sql
