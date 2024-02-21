@@ -44,50 +44,27 @@ sensor:
       system_uptime:
         friendly_name: "System Uptime"
         value_template: >
-          {% set last_boot = states('sensor.last_boot') %}
-          {% set current_time = as_timestamp(now()) %}
-          {% set uptime_seconds = current_time - as_timestamp(last_boot) %}
-          {% set uptime_minutes = uptime_seconds // 60 %}
-          {% set uptime_hours = uptime_minutes // 60 %}
-          {% set uptime_days = uptime_hours // 24 %}
-          {{ "%d days %02d:%02d:%02d" | format(uptime_days, uptime_hours % 24, uptime_minutes % 60, uptime_seconds % 60) }}
-  - platform: template
-    sensors:
-      average_indoor_temperature_conservatory:
-        friendly_name: "Average Indoor Temperature Conservatory"
-        value_template: "{{ states('sensor.wifiwen_shi_du_temperature') }}"
-        unit_of_measurement: "°C"
-      average_outdoor_temperature_conservatory:
-        friendly_name: "Average Outdoor Temperature Conservatory"
-        value_template: "{{ state_attr('weather.home', 'temperature') }}"
-        unit_of_measurement: "°C"
-      temperature_difference_conservatory:
-        friendly_name: "Temperature Difference Conservatory"
-        value_template: "{{ states('sensor.average_indoor_temperature_conservatory') | float - states('sensor.average_outdoor_temperature_conservatory') | float }}"
-        unit_of_measurement: "°C"
-      estimated_heat_loss_conservatory:
-        friendly_name: "Conservatory Heat Loss"
-        value_template: "{{ states('sensor.temperature_difference_conservatory') | float }}"
-        unit_of_measurement: "°C"
-  - platform: template
-    sensors:
-      average_indoor_temperature_living_room:
-        friendly_name: "Average Indoor Temperature Living Room"
-        value_template: "{{ states('sensor.living_room_temperature_temperature') }}"
-        unit_of_measurement: "°C"
-      average_outdoor_temperature_living_room:
-        friendly_name: "Average Outdoor Temperature Living Room"
-        value_template: "{{ state_attr('weather.home', 'temperature') }}"
-        unit_of_measurement: "°C"
-      temperature_difference_living_room:
-        friendly_name: "Temperature Difference Living Room"
-        value_template: "{{ states('sensor.average_indoor_temperature_living_room') | float - states('sensor.average_outdoor_temperature_living_room') | float }}"
-        unit_of_measurement: "°C"
-      estimated_heat_loss_living_room:
-        friendly_name: "Living Room Heat Loss"
-        value_template: "{{ states('sensor.temperature_difference_living_room') | float }}"
-        unit_of_measurement: "°C"
+          {{ state_attr('sensor.last_boot', 'uptime') }}
 
+      average_indoor_temperature:
+        friendly_name: "Average Indoor Temperature"
+        unit_of_measurement: "°C"
+        value_template: "{{ states('sensor.wifiwen_shi_du_temperature') }}"
+
+      average_outdoor_temperature:
+        friendly_name: "Average Outdoor Temperature"
+        unit_of_measurement: "°C"
+        value_template: "{{ state_attr('weather.home', 'temperature') }}"
+
+      temperature_difference:
+        friendly_name: "Temperature Difference"
+        unit_of_measurement: "°C"
+        value_template: "{{ states('sensor.average_indoor_temperature') | float - states('sensor.average_outdoor_temperature') | float }}"
+
+      estimated_heat_loss:
+        friendly_name: "Estimated Heat Loss"
+        unit_of_measurement: "°C"
+        value_template: "{{ states('sensor.temperature_difference') | float }}"
 
 # Database Sensors
   - platform: sql
@@ -98,6 +75,7 @@ sensor:
         query: 'SELECT table_schema "homeassistant", Round(Sum(data_length + index_length) / POWER(1024,2), 1) "value" FROM information_schema.tables WHERE table_schema="homeassistant" GROUP BY table_schema;'
         column: "value"
         unit_of_measurement: MB
+
   - platform: influxdb
     host: a0d7b954-influxdb
     port: 8086
@@ -181,129 +159,6 @@ recorder:
       - sensor.last_boot # Comes from 'systemmonitor' sensor platform
       - sun.sun # Don't record sun data
 
-# Energy Costs
-template:
-  sensor:
-    - name: "Smart Meter Electricity: Cost (Today)"
-      unique_id: smart_meter_electricity_cost_today
-      device_class: monetary
-      unit_of_measurement: "GBP"
-      state_class: total_increasing
-      icon: mdi:cash
-      state: >-
-        {{ (states('sensor.smart_meter_electricity_import_today') | float(default=0)
-            * states('sensor.smart_meter_electricity_import_unit_rate') | float(default=0)
-            + states('sensor.smart_meter_electricity_import_standing_charge') | float(default=0)
-        ) | round(2) }}
-
-    - name: "Smart Meter Gas: Cost (Today)"
-      unique_id: smart_meter_gas_cost_today
-      device_class: monetary
-      unit_of_measurement: "GBP"
-      state_class: total_increasing
-      icon: mdi:cash
-      state: >-
-        {{ (states('sensor.smart_meter_gas_import_today') | float(default=0)
-            * states('sensor.smart_meter_gas_import_unit_rate') | float(default=0)
-            + states('sensor.smart_meter_gas_import_standing_charge') | float(default=0)
-        ) | round(2) }}
-
-mqtt:
-  sensor:
-    - name: "Smart Meter Electricity: Import"
-      unique_id: "smart_meter_electricity_import"
-      state_topic: "glow/441793504B04/SENSOR/electricitymeter"
-      device_class: "energy"
-      unit_of_measurement: "kWh"
-      state_class: "total_increasing"
-      value_template: >
-        {% if value_json['electricitymeter']['energy']['import']['cumulative'] == 0 %}
-          {{ states('sensor.smart_meter_electricity_import') }}
-        {% else %}
-          {{ value_json['electricitymeter']['energy']['import']['cumulative'] }}
-        {% endif %}
-      icon: "mdi:flash"
-
-    - name: "Smart Meter Electricity: Import (Today)"
-      unique_id: "smart_meter_electricity_import_today"
-      state_topic: "glow/441793504B04/SENSOR/electricitymeter"
-      device_class: "energy"
-      unit_of_measurement: "kWh"
-      state_class: "measurement"
-      value_template: >
-        {% if value_json['electricitymeter']['energy']['import']['day'] == 0 
-          and now() > now().replace(hour=0).replace(minute=1).replace(second=0).replace(microsecond=0) %}
-          {{ states('sensor.smart_meter_electricity_import_today') }}
-        {% else %}
-          {{ value_json['electricitymeter']['energy']['import']['day'] }}
-        {% endif %}
-      icon: "mdi:flash"
-    
-    - name: "Smart Meter Electricity: Import Unit Rate"
-      unique_id: "smart_meter_electricity_import_unit_rate"
-      state_topic: "glow/441793504B04/SENSOR/electricitymeter"
-      device_class: "monetary"
-      unit_of_measurement: "GBP/kWh"
-      state_class: "measurement"
-      value_template: "{{ value_json['electricitymeter']['energy']['import']['price']['unitrate'] }}"
-      icon: "mdi:cash"
-
-    - name: "Smart Meter Electricity: Import Standing Charge"
-      unique_id: "smart_meter_electricity_import_standing_charge"
-      state_topic: "glow/441793504B04/SENSOR/electricitymeter"
-      device_class: "monetary"
-      unit_of_measurement: "GBP"
-      state_class: "measurement"
-      value_template: "{{ value_json['electricitymeter']['energy']['import']['price']['standingcharge'] }}"
-      icon: "mdi:cash"
-
-    - name: "Smart Meter Electricity: Power"
-      unique_id: "smart_meter_electricity_power"
-      state_topic: "glow/441793504B04/SENSOR/electricitymeter"
-      device_class: "power"
-      unit_of_measurement: "kW"
-      state_class: "measurement"
-      value_template: >
-        {% if value_json['electricitymeter']['power']['value'] < 0 %}
-          {{ states('sensor.smart_meter_electricity_power') }}
-        {% else %}
-          {{ value_json['electricitymeter']['power']['value'] }}
-        {% endif %}
-      icon: "mdi:flash"
-
-    - name: "Smart Meter Gas: Import (Today)"
-      unique_id: "smart_meter_gas_import_today"
-      state_topic: "glow/441793504B04/SENSOR/gasmeter"
-      device_class: "energy"
-      unit_of_measurement: "kWh"
-      state_class: "measurement"
-      value_template: >
-        {% if value_json['gasmeter']['energy']['import']['day'] == 0 
-          and now() > now().replace(hour=0).replace(minute=1).replace(second=0).replace(microsecond=0) %}
-          {{ states('sensor.smart_meter_gas_import_today') }}
-        {% else %}
-          {{ value_json['gasmeter']['energy']['import']['day'] }}
-        {% endif %}
-      icon: "mdi:fire"
-
-    - name: "Smart Meter Gas: Import Unit Rate"
-      unique_id: "smart_meter_gas_import_unit_rate"
-      state_topic: "glow/441793504B04/SENSOR/gasmeter"
-      device_class: "monetary"
-      unit_of_measurement: "GBP/kWh"
-      state_class: "measurement"
-      value_template: "{{ value_json['gasmeter']['energy']['import']['price']['unitrate'] }}"
-      icon: "mdi:cash"
-
-    - name: "Smart Meter Gas: Import Standing Charge"
-      unique_id: "smart_meter_gas_import_standing_charge"
-      state_topic: "glow/441793504B04/SENSOR/gasmeter"
-      device_class: "monetary"
-      unit_of_measurement: "GBP"
-      state_class: "measurement"
-      value_template: "{{ value_json['gasmeter']['energy']['import']['price']['standingcharge'] }}"
-      icon: "mdi:cash"
-
 # Alexa Configuration
 alexa:
   smart_home:
@@ -326,13 +181,3 @@ http:
     - 54.239.102.0/24
     - 54.239.103.0/24
     - 192.168.1.0/24
-    - 10.0.0.0/8
-  ip_ban_enabled: true
-  login_attempts_threshold: 5
-
-# Shell Command
-shell_command:
-  upload_config_to_github: 'cd /config && git add . && git commit -m "Automated commit" && git push origin master'
-  pushupdates_to_github: /bin/bash /config/pushupdates.sh
-
-api:
