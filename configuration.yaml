@@ -150,7 +150,7 @@ notify:
       - media_player.master_bedroom_echo
       - media_player.downstairs_echo
       - media_player.paul_s_2nd_alexa_app_for_pc
-      - media_player.office_ech
+      - media_player.office_echo
 
 # Recorder Configuration
 recorder:
