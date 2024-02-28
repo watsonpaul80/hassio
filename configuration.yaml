@@ -189,3 +189,9 @@ http:
     - 54.239.102.0/24
     - 54.239.103.0/24
     - 192.168.1.0/24
+# Shell Command
+shell_command:
+  upload_config_to_github: 'cd /config && git add . && git commit -m "Automated commit" && git push origin master'
+  pushupdates_to_github: /bin/bash /config/pushupdates.sh
+
+api:
