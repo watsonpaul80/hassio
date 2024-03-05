@@ -412,3 +412,28 @@
     entity_id: e8f1fba56a69f522e5b13d18149fd4c0
     domain: switch
   mode: single
+- id: '1709392756507'
+  alias: Light strip
+  description: ''
+  trigger:
+  - platform: time
+    at: '19:00:00'
+  - platform: time
+    at: '23:00:00'
+  condition: []
+  action:
+  - condition: state
+    entity_id: light.dreamview_t1
+    state: 'on'
+  - type: turn_off
+    device_id: cb8a4a776f0b561b4c61a8d186e67a02
+    entity_id: 8f30db09dcccdefeff629a6b75dc149d
+    domain: light
+  - condition: state
+    entity_id: light.dreamview_t1
+    state: 'off'
+  - type: turn_on
+    device_id: cb8a4a776f0b561b4c61a8d186e67a02
+    entity_id: 8f30db09dcccdefeff629a6b75dc149d
+    domain: light
+  mode: single
