@@ -1,28 +1,25 @@
-# Home Assistant Configuration
-default_config:
-
-# Text to Speech
-tts:
-  - platform: google_translate
-
-# Group Configurations
+# Include necessary files
 group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
-# Home Assistant Configuration
+# Configure Home Assistant
 homeassistant:
   allowlist_external_dirs:
     - "/tmp"
 
-# Switch Configurations
+# Configure TTS
+tts:
+  - platform: google_translate
+
+# Configure switches
 switch:
   - platform: wake_on_lan
     mac: a8:a1:59:19:a8:db
     host: 192.168.3.32
 
-# Input Number Configurations
+# Configure input numbers
 input_number:
   automation_run_count:
     name: Automation Run Count
@@ -37,25 +34,21 @@ input_number:
     max: 99999
     step: 1
 
-# Sensor Configurations
+# Configure sensors
 sensor:
   - platform: template
     sensors:
       system_uptime:
         friendly_name: "System Uptime"
-        value_template: >
-          {{ state_attr('sensor.last_boot', 'uptime') }}
-
+        value_template: "{{ state_attr('sensor.last_boot', 'uptime') }}"
       average_outdoor_temperature:
         friendly_name: "Average Outdoor Temperature"
         unit_of_measurement: "°C"
         value_template: "{{ state_attr('weather.home', 'temperature') }}"
-
       temperature_difference_conservatory:
         friendly_name: "Temperature Difference Conservatory"
         unit_of_measurement: "°C"
         value_template: "{{ states('sensor.average_indoor_conservatory_temperature') | float - states('sensor.average_outdoor_temperature') | float }}"
-
       estimated_heat_loss_conservatory:
         friendly_name: "Conservatory Heat Loss"
         unit_of_measurement: "°C"
@@ -68,19 +61,22 @@ sensor:
         friendly_name: "Temperature Difference Living Room"
         unit_of_measurement: "°C"
         value_template: "{{ states('sensor.average_indoor_living_room_temperature') | float - states('sensor.average_outdoor_temperature') | float }}"
-
       estimated_heat_loss_living_room:
         friendly_name: "Living Room Heat Loss"
         unit_of_measurement: "°C"
-        value_template: "{{ states('sensor.temperature_difference_living_room') | float }}"  
+        value_template: "{{ states('sensor.temperature_difference_living_room') | float }}"
 
-# Database Sensors
   - platform: sql
     db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
     scan_interval: 600
     queries:
       - name: MariaDB Database Size
-        query: 'SELECT table_schema "homeassistant", Round(Sum(data_length + index_length) / POWER(1024,2), 1) "value" FROM information_schema.tables WHERE table_schema="homeassistant" GROUP BY table_schema;'
+        query: >
+          SELECT table_schema "homeassistant", 
+            Round(Sum(data_length + index_length) / POWER(1024,2), 1) "value"
+          FROM information_schema.tables 
+          WHERE table_schema="homeassistant" 
+          GROUP BY table_schema;
         column: "value"
         unit_of_measurement: MB
 
@@ -93,14 +89,14 @@ sensor:
     queries:
       - name: InfluxDB Database Size
         unit_of_measurement: MB
-        value_template: "{{ (value | float(0) / 1024 /1024) | round(1) }}"
+        value_template: "{{ (value | float(0) / 1024 / 1024) | round(1) }}"
         group_function: sum
         measurement: '"monitor"."shard"'
         database: _internal
         where: '"database"=''homeassistant'' AND time > now() - 5m'
         field: diskBytes
 
-# InfluxDB Configuration
+# Configure InfluxDB
 influxdb:
   host: a0d7b954-influxdb
   port: 8086
@@ -110,7 +106,7 @@ influxdb:
   max_retries: 3
   default_measurement: state
 
-# Notify Configurations
+# Configure notifications
 notify:
   - name: email
     platform: smtp
@@ -124,11 +120,13 @@ notify:
     recipient:
       - !secret email_recipient
     sender_name: HASSIO
+
   - platform: telegram
-    name: 'Telegram Bot'
+    name: Telegram Bot
     chat_id: 1054773464
+
   - platform: alexa_media
-    name: 'Alexa Group'
+    name: Alexa Group
     target:
       - media_player.master_bedroom_echo
       - media_player.downstairs_echo
@@ -136,23 +134,24 @@ notify:
   - name: group_telegram_and_email
     platform: group
     services:
-    - service: email
-    - service: telegram
+      - service: email
+      - service: telegram
+
   - name: group_alexa_and_telegram
     platform: group
     services:
-    - service: alexa_media
-    - service: telegram
+      - service: alexa_media
+      - service: telegram
 
   - platform: alexa_media
-    name: 'Alexa Group'
+    name: Alexa Group
     target:
       - media_player.master_bedroom_echo
       - media_player.downstairs_echo
       - media_player.paul_s_2nd_alexa_app_for_pc
       - media_player.office_echo
 
-# Recorder Configuration
+# Configure recorder
 recorder:
   db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
   commit_interval: 20
@@ -164,20 +163,79 @@ recorder:
       - weather.*
     entities:
       - sensor.date
-      - sensor.last_boot # Comes from 'systemmonitor' sensor platform
-      - sun.sun # Don't record sun data
+      - sensor.last_boot
+      - sun.sun
 
-# Alexa Configuration
+# Configure statistics
+statistics:
+  enabled: true
+  sensors:
+    sensor.weekly_electricity_usage:
+      name: "Weekly Electricity Usage"
+      state_characteristic: "sum"
+      perm_unit: "kWh"
+      perm_period: "weekly"
+
+    sensor.monthly_electricity_usage:
+      name: "Monthly Electricity Usage"
+      state_characteristic: "sum"
+      perm_unit: "kWh"
+      perm_period: "monthly"
+
+    sensor.weekly_electricity_cost:
+      name: "Weekly Electricity Cost"
+      state_characteristic: "sum"
+      perm_unit: "£"
+      perm_period: "weekly"
+      unit_of_measurement: "£"
+      unit_value: "{{ states('sensor.smart_meter_electricity_import_unit_rate_2') + states('sensor.smart_meter_electricity_import_standing_charge_2') }}"
+
+    sensor.monthly_electricity_cost:
+      name: "Monthly Electricity Cost"
+      state_characteristic: "sum"
+      perm_unit: "£"
+      perm_period: "monthly"
+      unit_of_measurement: "£"
+      unit_value: "{{ states('sensor.smart_meter_electricity_import_unit_rate_2') + states('sensor.smart_meter_electricity_import_standing_charge_2') }}"
+
+    # Add a similar configuration for gas usage and cost sensors
+    sensor.weekly_gas_usage:
+      name: "Weekly Gas Usage"
+      state_characteristic: "sum"
+      perm_unit: "kWh"  # Adjust unit based on your gas meter
+      perm_period: "weekly"
+
+    sensor.monthly_gas_usage:
+      name: "Monthly Gas Usage"
+      state_characteristic: "sum"  
+      perm_unit: "kWh"  # Adjust unit based on your gas meter
+      perm_period: "monthly"
+
+    sensor.weekly_gas_cost:
+      name: "Weekly Gas Cost"
+      state_characteristic: "sum"
+      perm_unit: "£"
+      perm_period: "weekly"
+      unit_of_measurement: "£"
+      unit_value: "{{ states('sensor.smart_meter_gas_import_unit_rate_2') + states('sensor.smart_meter_gas_import_standing_charge_2') }}"
+
+    sensor.monthly_gas_cost:
+      name: "Monthly Gas Cost"
+      state_characteristic: "sum"
+      perm_unit: "£" 
+      perm_period: "monthly"
+      unit_of_measurement: "£"
+      unit_value: "{{ states('sensor.smart_meter_gas_import_unit_rate_2') + states('sensor.smart_meter_gas_import_standing_charge_2') }}"
+
+# Configure other integrations
 alexa:
   smart_home:
 
-# Telegram Bot Configuration
 telegram_bot:
   - platform: polling
     api_key: !secret telegram_api_key
     allowed_chat_ids: !secret telegram_allowed_chat_ids
 
-# HTTP Configuration
 http:
   use_x_forwarded_for: true
   trusted_proxies:
@@ -189,7 +247,7 @@ http:
     - 54.239.102.0/24
     - 54.239.103.0/24
     - 192.168.1.0/24
-# Shell Command
+
 shell_command:
   upload_config_to_github: 'cd /config && git add . && git commit -m "Automated commit" && git push origin master'
   pushupdates_to_github: /bin/bash /config/pushupdates.sh
