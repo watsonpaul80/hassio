@@ -48,11 +48,24 @@ sensor:
       temperature_difference_conservatory:
         friendly_name: "Temperature Difference Conservatory"
         unit_of_measurement: "°C"
-        value_template: "{{ states('sensor.average_indoor_conservatory_temperature') | float - states('sensor.average_outdoor_temperature') | float }}"
+        value_template: >
+          {% set indoor_temp = states('sensor.average_indoor_conservatory_temperature') %}
+          {% set outdoor_temp = states('sensor.average_outdoor_temperature') %}
+          {% if indoor_temp != 'unknown' and outdoor_temp != 'unknown' %}
+            {{ indoor_temp | float - outdoor_temp | float }}
+          {% else %}
+            {{ 'N/A' }}
+          {% endif %}
       estimated_heat_loss_conservatory:
         friendly_name: "Conservatory Heat Loss"
         unit_of_measurement: "°C"
-        value_template: "{{ states('sensor.temperature_difference_conservatory') | float }}"
+        value_template: >
+          {% set temp_diff = states('sensor.temperature_difference_conservatory') %}
+          {% if temp_diff != 'unknown' and temp_diff != 'unavailable' and temp_diff != 'N/A' %}
+            {{ temp_diff | float }}
+          {% else %}
+            {{ 'N/A' }}
+          {% endif %}
       average_indoor_living_room_temperature:
         friendly_name: "Average Indoor Living Room Temperature"
         unit_of_measurement: "°C"
@@ -65,6 +78,26 @@ sensor:
         friendly_name: "Living Room Heat Loss"
         unit_of_measurement: "°C"
         value_template: "{{ states('sensor.temperature_difference_living_room') | float }}"
+
+      weekly_electricity_cost:
+        friendly_name: "Weekly Electricity Cost"
+        unit_of_measurement: "£"
+        value_template: "{{ (states('sensor.smart_meter_electricity_import_unit_rate_2') | float + states('sensor.smart_meter_electricity_import_standing_charge_2') | float) * states('sensor.weekly_electricity_usage') | float }}"
+
+      monthly_electricity_cost:
+        friendly_name: "Monthly Electricity Cost"
+        unit_of_measurement: "£"
+        value_template: "{{ (states('sensor.smart_meter_electricity_import_unit_rate_2') | float + states('sensor.smart_meter_electricity_import_standing_charge_2') | float) * states('sensor.monthly_electricity_usage') | float }}"
+
+      weekly_gas_cost:
+        friendly_name: "Weekly Gas Cost"
+        unit_of_measurement: "£"
+        value_template: "{{ (states('sensor.smart_meter_gas_import_unit_rate_2') | float + states('sensor.smart_meter_gas_import_standing_charge_2') | float) * states('sensor.weekly_gas_usage') | float }}"
+
+      monthly_gas_cost:
+        friendly_name: "Monthly Gas Cost"
+        unit_of_measurement: "£"
+        value_template: "{{ (states('sensor.smart_meter_gas_import_unit_rate_2') | float + states('sensor.smart_meter_gas_import_standing_charge_2') | float) * states('sensor.monthly_gas_usage') | float }}"
 
   - platform: sql
     db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
@@ -165,67 +198,6 @@ recorder:
       - sensor.date
       - sensor.last_boot
       - sun.sun
-
-# Configure statistics
-statistics:
-  enabled: true
-  sensors:
-    sensor.weekly_electricity_usage:
-      name: "Weekly Electricity Usage"
-      state_characteristic: "sum"
-      perm_unit: "kWh"
-      perm_period: "weekly"
-
-    sensor.monthly_electricity_usage:
-      name: "Monthly Electricity Usage"
-      state_characteristic: "sum"
-      perm_unit: "kWh"
-      perm_period: "monthly"
-
-    sensor.weekly_electricity_cost:
-      name: "Weekly Electricity Cost"
-      state_characteristic: "sum"
-      perm_unit: "£"
-      perm_period: "weekly"
-      unit_of_measurement: "£"
-      unit_value: "{{ states('sensor.smart_meter_electricity_import_unit_rate_2') + states('sensor.smart_meter_electricity_import_standing_charge_2') }}"
-
-    sensor.monthly_electricity_cost:
-      name: "Monthly Electricity Cost"
-      state_characteristic: "sum"
-      perm_unit: "£"
-      perm_period: "monthly"
-      unit_of_measurement: "£"
-      unit_value: "{{ states('sensor.smart_meter_electricity_import_unit_rate_2') + states('sensor.smart_meter_electricity_import_standing_charge_2') }}"
-
-    # Add a similar configuration for gas usage and cost sensors
-    sensor.weekly_gas_usage:
-      name: "Weekly Gas Usage"
-      state_characteristic: "sum"
-      perm_unit: "kWh"  # Adjust unit based on your gas meter
-      perm_period: "weekly"
-
-    sensor.monthly_gas_usage:
-      name: "Monthly Gas Usage"
-      state_characteristic: "sum"  
-      perm_unit: "kWh"  # Adjust unit based on your gas meter
-      perm_period: "monthly"
-
-    sensor.weekly_gas_cost:
-      name: "Weekly Gas Cost"
-      state_characteristic: "sum"
-      perm_unit: "£"
-      perm_period: "weekly"
-      unit_of_measurement: "£"
-      unit_value: "{{ states('sensor.smart_meter_gas_import_unit_rate_2') + states('sensor.smart_meter_gas_import_standing_charge_2') }}"
-
-    sensor.monthly_gas_cost:
-      name: "Monthly Gas Cost"
-      state_characteristic: "sum"
-      perm_unit: "£" 
-      perm_period: "monthly"
-      unit_of_measurement: "£"
-      unit_value: "{{ states('sensor.smart_meter_gas_import_unit_rate_2') + states('sensor.smart_meter_gas_import_standing_charge_2') }}"
 
 # Configure other integrations
 alexa:
