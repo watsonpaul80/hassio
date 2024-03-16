@@ -162,7 +162,7 @@ sensor:
         field: diskBytes
 camera:
   - platform: generic
-    name: Living Room Camera Stream
+    name: Shed Camera Stream
     still_image_url: http://192.168.3.19:8123/api/hassio_ingress/NZTwd2Hk3wRCdKS7D5Ow3K-N5HrCXXt4ssyqBnmgdZY/stream.html?src=rtsp://192.168.3.47:554&mode=webrtc
     stream_source: http://192.168.3.19:8123/api/hassio_ingress/NZTwd2Hk3wRCdKS7D5Ow3K-N5HrCXXt4ssyqBnmgdZY/stream.html?src=rtsp://192.168.3.47:554&mode=webrtc
 
