@@ -170,7 +170,8 @@ multiscrape:
         name: "Latest Stable Tour"
         select: "div.panel-content article:first-of-type"
         value_template: >
-          {% set article = value %}
+          {% set html = value | parse_html %}
+          {% set article = html.select_one('div.panel-content article:first-of-type') %}
           {% set trainer = article.select_one('h4 a').text.strip() %}
           {% set date = article.select_one('time').get('datetime').strip() %}
           {{ trainer }} - {{ date }}
