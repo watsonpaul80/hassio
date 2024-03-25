@@ -160,23 +160,15 @@ sensor:
         database: _internal
         where: '"database"=''homeassistant'' AND time > now() - 5m'
         field: diskBytes
-multiscrape:
-  - name: AtTheRaces Stable Tours
-    resource: https://www.attheraces.com/stable-tours
-    scan_interval: 3600 # Check every hour
-    log_response: true # Enable logging for debugging
-    sensor:
-      - unique_id: latest_stable_tour
-        name: "Latest Stable Tour"
-        value_template: >
-          {% set trainer = value | regex_search('(?i)<h4[^>]*>\\s*<a[^>]*>([^<]+)</a>', '\\1') | trim %}
-          {% set date = value | regex_search('(?i)<time[^>]*datetime="([^"]+)"', '\\1') | trim %}
-          {{ trainer }} - {{ date }}
-        attributes:
-          - name: url
-            value_template: >
-              {% set url = value | regex_search('(?i)<h4[^>]*>\\s*<a[^>]*href="([^"]+)"', '\\1') | trim %}
-              {{ url }}
+
+  - platform: multiscrape
+    resource: 
+      - name: "Stable Tours"
+        url: "https://www.attheraces.com/stable-tours"
+        select: "a[href^='/stable-tours/'].a--plain"
+        index: 0
+        attribute: "innerText"
+
 # Configure InfluxDB
 influxdb:
   host: a0d7b954-influxdb
