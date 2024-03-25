@@ -174,7 +174,7 @@ multiscrape:
           {% set trainer = article.select_one('h4 a').text.strip() %}
           {% set date = article.select_one('time').get('datetime').strip() %}
           {{ trainer }} - {{ date }}
-        attribute:
+        attributes:
           - name: url
             select: "h4 a"
             attribute: href
