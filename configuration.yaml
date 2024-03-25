@@ -164,13 +164,15 @@ sensor:
     resource: https://www.attheraces.com/stable-tours
     name: at_the_races_stable_tours
     scan_interval: 3600 # Check every hour
-    value_template: "{{ value }}"
+    value_template: "OK"
+    json_attributes:
+      - html
   - platform: template
     sensors:
       latest_stable_tour:
         friendly_name: "Latest Stable Tour"
         value_template: >
-          {% set html = states('sensor.at_the_races_stable_tours') %}
+          {% set html = state_attr('sensor.at_the_races_stable_tours', 'html') %}
           {% set soup = states.sensor.at_the_races_stable_tours.attributes.get('beautifulsoup') %}
           {% set article = soup.find('article') %}
           {% if article %}
@@ -183,7 +185,7 @@ sensor:
           {% endif %}
         attribute_templates:
           url: >
-            {% set html = states('sensor.at_the_races_stable_tours') %}
+            {% set html = state_attr('sensor.at_the_races_stable_tours', 'html') %}
             {% set soup = states.sensor.at_the_races_stable_tours.attributes.get('beautifulsoup') %}
             {% set article = soup.find('article') %}
             {% if article %}
@@ -191,6 +193,7 @@ sensor:
             {% else %}
               None
             {% endif %}
+          html: "{{ states('sensor.at_the_races_stable_tours') }}"
 
 # Configure InfluxDB
 influxdb:
