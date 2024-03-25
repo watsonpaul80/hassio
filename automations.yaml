@@ -294,10 +294,10 @@
       message: 'Good evening! Here are today''s energy costs:
 
 
-        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today'') }}.
+        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today_2'') }}.
 
 
-        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today'')
+        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today_2'')
         }}
 
         '
@@ -313,10 +313,10 @@
       message: 'Good evening! Here are today''s energy costs:
 
 
-        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today'') }}.
+        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today_2'') }}.
 
 
-        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today'')
+        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today_2'')
         }}
 
         '
@@ -325,10 +325,10 @@
       message: 'Good evening! Here are today''s energy costs:
 
 
-        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today'') }}.
+        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today_2'') }}.
 
 
-        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today'')
+        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today_2'')
         }}
 
         '
@@ -416,24 +416,29 @@
   alias: Light strip
   description: ''
   trigger:
-  - platform: time
-    at: '19:00:00'
+  - platform: sun
+    event: sunset
   - platform: time
     at: '23:00:00'
-  condition: []
+  condition:
+  - condition: time
+    before: '23:00:00'
   action:
-  - condition: state
-    entity_id: light.dreamview_t1
-    state: 'on'
-  - type: turn_off
-    device_id: cb8a4a776f0b561b4c61a8d186e67a02
-    entity_id: 8f30db09dcccdefeff629a6b75dc149d
-    domain: light
-  - condition: state
-    entity_id: light.dreamview_t1
-    state: 'off'
-  - type: turn_on
-    device_id: cb8a4a776f0b561b4c61a8d186e67a02
-    entity_id: 8f30db09dcccdefeff629a6b75dc149d
-    domain: light
+  - choose:
+    - conditions:
+      - condition: time
+        before: '23:00:00'
+      sequence:
+      - type: turn_on
+        device_id: cb8a4a776f0b561b4c61a8d186e67a02
+        entity_id: 8f30db09dcccdefeff629a6b75dc149d
+        domain: light
+    - conditions:
+      - condition: time
+        after: '23:00:00'
+      sequence:
+      - type: turn_off
+        device_id: cb8a4a776f0b561b4c61a8d186e67a02
+        entity_id: 8f30db09dcccdefeff629a6b75dc149d
+        domain: light
   mode: single

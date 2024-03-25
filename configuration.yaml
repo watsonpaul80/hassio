@@ -160,11 +160,37 @@ sensor:
         database: _internal
         where: '"database"=''homeassistant'' AND time > now() - 5m'
         field: diskBytes
-camera:
-  - platform: generic
-    name: Shed Camera Stream
-    still_image_url: http://192.168.3.19:8123/api/hassio_ingress/NZTwd2Hk3wRCdKS7D5Ow3K-N5HrCXXt4ssyqBnmgdZY/stream.html?src=rtsp://192.168.3.47:554&mode=webrtc
-    stream_source: http://192.168.3.19:8123/api/hassio_ingress/NZTwd2Hk3wRCdKS7D5Ow3K-N5HrCXXt4ssyqBnmgdZY/stream.html?src=rtsp://192.168.3.47:554&mode=webrtc
+  - platform: rest
+    resource: https://www.attheraces.com/stable-tours
+    name: at_the_races_stable_tours
+    scan_interval: 3600 # Check every hour
+    value_template: "{{ value }}"
+  - platform: template
+    sensors:
+      latest_stable_tour:
+        friendly_name: "Latest Stable Tour"
+        value_template: >
+          {% set html = states('sensor.at_the_races_stable_tours') %}
+          {% set soup = states.sensor.at_the_races_stable_tours.attributes.get('beautifulsoup') %}
+          {% set article = soup.find('article') %}
+          {% if article %}
+            {% set url = article.find('h4').find('a')['href'] %}
+            {% set trainer = article.find('h4').find('a').text.strip() %}
+            {% set date = article.find('time')['datetime'].strip() %}
+            {{ trainer }} - {{ date }}
+          {% else %}
+            No stable tours found
+          {% endif %}
+        attribute_templates:
+          url: >
+            {% set html = states('sensor.at_the_races_stable_tours') %}
+            {% set soup = states.sensor.at_the_races_stable_tours.attributes.get('beautifulsoup') %}
+            {% set article = soup.find('article') %}
+            {% if article %}
+              {{ article.find('h4').find('a')['href'] }}
+            {% else %}
+              None
+            {% endif %}
 
 # Configure InfluxDB
 influxdb:
