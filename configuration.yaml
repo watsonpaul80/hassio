@@ -175,10 +175,9 @@ multiscrape:
           {% set date = article.select_one('time').get('datetime').strip() %}
           {{ trainer }} - {{ date }}
         attribute:
-          url:
+          - name: url
             select: "h4 a"
             attribute: href
-
 # Configure InfluxDB
 influxdb:
   host: a0d7b954-influxdb
