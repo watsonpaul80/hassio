@@ -165,15 +165,18 @@ sensor:
     name: at_the_races_stable_tours
     scan_interval: 3600 # Check every hour
     value_template: "OK"
-    json_attributes:
-      - html
+    force_update: true
+    attributes:
+      - name: "html"
+        value: "{{ value }}"
+      - name: "beautifulsoup"
+        value: "{{ value | beautifulsoup }}"
   - platform: template
     sensors:
       latest_stable_tour:
         friendly_name: "Latest Stable Tour"
         value_template: >
-          {% set html = state_attr('sensor.at_the_races_stable_tours', 'html') %}
-          {% set soup = states.sensor.at_the_races_stable_tours.attributes.get('beautifulsoup') %}
+          {% set soup = state_attr('sensor.at_the_races_stable_tours', 'beautifulsoup') %}
           {% set article = soup.find('article') %}
           {% if article %}
             {% set url = article.find('h4').find('a')['href'] %}
@@ -185,8 +188,7 @@ sensor:
           {% endif %}
         attribute_templates:
           url: >
-            {% set html = state_attr('sensor.at_the_races_stable_tours', 'html') %}
-            {% set soup = states.sensor.at_the_races_stable_tours.attributes.get('beautifulsoup') %}
+            {% set soup = state_attr('sensor.at_the_races_stable_tours', 'beautifulsoup') %}
             {% set article = soup.find('article') %}
             {% if article %}
               {{ article.find('h4').find('a')['href'] }}
