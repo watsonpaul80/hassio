@@ -168,14 +168,15 @@ sensor:
         select: "article"
         index: 0
         value_template: >
-          {% set trainer = value.select('h4 a')[0].text.strip() %}
-          {% set date = value.select('time')[0]['datetime'].strip() %}
+          {% set article = value | parse_html %}
+          {% set trainer = article.select('h4 a')[0].text.strip() %}
+          {% set date = article.select('time')[0]['datetime'].strip() %}
           {{ trainer }} - {{ date }}
         attribute:
           url:
             select: "h4 a"
             index: 0
-            attr: "href"  
+            attr: "href"
 
 # Configure InfluxDB
 influxdb:
