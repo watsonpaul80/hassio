@@ -168,13 +168,14 @@ multiscrape:
     sensor:
       - unique_id: latest_stable_tour
         name: "Latest Stable Tour"
-        select: "article:first-of-type"
+        select: "div.panel-content article:first-of-type"
         value_template: >
-          {% set trainer = value.select('h4 a')[0].text.strip() %}
-          {% set date = value.select('time')[0]['datetime'].strip() %}
+          {% set article = value %}
+          {% set trainer = article.select_one('h4 a').text.strip() %}
+          {% set date = article.select_one('time').get('datetime').strip() %}
           {{ trainer }} - {{ date }}
-        attributes:
-          - name: url
+        attribute:
+          url:
             select: "h4 a"
             attribute: href
 
