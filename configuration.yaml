@@ -168,17 +168,15 @@ multiscrape:
     sensor:
       - unique_id: latest_stable_tour
         name: "Latest Stable Tour"
-        select: "div.panel-content article:first-of-type"
         value_template: >
-          {% set html = value | parse_html %}
-          {% set article = html.select_one('div.panel-content article:first-of-type') %}
-          {% set trainer = article.select_one('h4 a').text.strip() %}
-          {% set date = article.select_one('time').get('datetime').strip() %}
+          {% set trainer = value | regex_search('(?i)<h4[^>]*>\\s*<a[^>]*>([^<]+)</a>', '\\1') | trim %}
+          {% set date = value | regex_search('(?i)<time[^>]*datetime="([^"]+)"', '\\1') | trim %}
           {{ trainer }} - {{ date }}
         attributes:
           - name: url
-            select: "h4 a"
-            attribute: href
+            value_template: >
+              {% set url = value | regex_search('(?i)<h4[^>]*>\\s*<a[^>]*href="([^"]+)"', '\\1') | trim %}
+              {{ url }}
 # Configure InfluxDB
 influxdb:
   host: a0d7b954-influxdb
