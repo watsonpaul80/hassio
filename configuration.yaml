@@ -164,13 +164,10 @@ sensor:
     resource: https://www.attheraces.com/stable-tours
     name: at_the_races_stable_tours
     scan_interval: 3600 # Check every hour
-    value_template: "OK"
-    force_update: true
-    attributes:
-      - name: "html"
-        value: "{{ value }}"
-      - name: "beautifulsoup"
-        value: "{{ value | beautifulsoup }}"
+    value_template: >
+      {% set html = value %}
+      {% set soup = value | beautifulsoup %}
+      OK
   - platform: template
     sensors:
       latest_stable_tour:
