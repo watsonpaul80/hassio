@@ -167,7 +167,7 @@ sensor:
         url: "https://www.attheraces.com/stable-tours"
         select: "a[href^='/stable-tours/'].a--plain"
         index: 0
-        attribute: "innerText"
+        attributes: "innerText"
 
 # Configure InfluxDB
 influxdb:
