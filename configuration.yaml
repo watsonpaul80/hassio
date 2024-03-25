@@ -161,7 +161,6 @@ sensor:
         database: _internal
         where: '"database"=''homeassistant'' AND time > now() - 5m'
         field: diskBytes
-sensor:
   - platform: scrape
     resource: https://www.attheraces.com/stable-tours
     scan_interval: 3600 # Check every hour
