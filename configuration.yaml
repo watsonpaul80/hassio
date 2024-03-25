@@ -1,5 +1,6 @@
 # Include necessary files
 default_config:
+beautifulsoup:
 group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
@@ -160,13 +161,21 @@ sensor:
         database: _internal
         where: '"database"=''homeassistant'' AND time > now() - 5m'
         field: diskBytes
+  - platform: rest
+    resource: https://www.attheraces.com/stable-tours
+    name: at_the_races_stable_tours
+    scan_interval: 3600 # Check every hour
+    value_template: "OK"
+    json_attributes:
+      - html
+
   - platform: template
     sensors:
       latest_stable_tour:
         friendly_name: "Latest Stable Tour"
         value_template: >
           {% set html = state_attr('sensor.at_the_races_stable_tours', 'html') %}
-          {% set soup = html | convert_html %}
+          {% set soup = html | beautifulsoup %}
           {% set article = soup.find('article') %}
           {% if article %}
             {% set url = article.find('h4').find('a')['href'] %}
@@ -179,13 +188,13 @@ sensor:
         attribute_templates:
           url: >
             {% set html = state_attr('sensor.at_the_races_stable_tours', 'html') %}
-            {% set soup = html | convert_html %}
+            {% set soup = html | beautifulsoup %}
             {% set article = soup.find('article') %}
             {% if article %}
               {{ article.find('h4').find('a')['href'] }}
             {% else %}
               None
-            {% endif %}
+            {% endif %}    
 
 # Configure InfluxDB
 influxdb:
