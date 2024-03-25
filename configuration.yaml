@@ -1,5 +1,6 @@
 # Include necessary files
 default_config:
+scrape:
 group: !include groups.yaml
 automation: !include automations.yaml
 script: !include scripts.yaml
