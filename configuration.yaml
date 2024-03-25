@@ -161,40 +161,23 @@ sensor:
         database: _internal
         where: '"database"=''homeassistant'' AND time > now() - 5m'
         field: diskBytes
-  - platform: rest
+sensor:
+  - platform: scrape
     resource: https://www.attheraces.com/stable-tours
-    name: at_the_races_stable_tours
     scan_interval: 3600 # Check every hour
-    value_template: "OK"
-    json_attributes:
-      - html
-
-  - platform: template
-    sensors:
-      latest_stable_tour:
-        friendly_name: "Latest Stable Tour"
+    sensor:
+      - name: "Latest Stable Tour"
+        select: "article"
+        index: 0
         value_template: >
-          {% set html = state_attr('sensor.at_the_races_stable_tours', 'html') %}
-          {% set soup = html | beautifulsoup %}
-          {% set article = soup.find('article') %}
-          {% if article %}
-            {% set url = article.find('h4').find('a')['href'] %}
-            {% set trainer = article.find('h4').find('a').text.strip() %}
-            {% set date = article.find('time')['datetime'].strip() %}
-            {{ trainer }} - {{ date }}
-          {% else %}
-            No stable tours found
-          {% endif %}
-        attribute_templates:
-          url: >
-            {% set html = state_attr('sensor.at_the_races_stable_tours', 'html') %}
-            {% set soup = html | beautifulsoup %}
-            {% set article = soup.find('article') %}
-            {% if article %}
-              {{ article.find('h4').find('a')['href'] }}
-            {% else %}
-              None
-            {% endif %}    
+          {% set trainer = value.select('h4 a')[0].text.strip() %}
+          {% set date = value.select('time')[0]['datetime'].strip() %}
+          {{ trainer }} - {{ date }}
+        attribute:
+          url:
+            select: "h4 a"
+            index: 0
+            attr: "href"  
 
 # Configure InfluxDB
 influxdb:
