@@ -178,7 +178,16 @@ influxdb:
   password: !secret influxdb_password
   max_retries: 3
   default_measurement: state
-
+  exclude:
+    domains:
+      - update
+    entity_globs:
+      - sensor.sun*
+      - weather.*
+    entities:
+      - sensor.date
+      - sensor.last_boot
+      - sun.sun
 # Configure notifications
 notify:
   - name: email
