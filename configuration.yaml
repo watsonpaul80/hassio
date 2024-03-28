@@ -184,6 +184,8 @@ influxdb:
     entity_globs:
       - sensor.sun*
       - weather.*
+      - sensor.system_monitor_*
+      - sensor.glances_*
     entities:
       - sensor.date
       - sensor.last_boot
