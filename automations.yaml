@@ -2,116 +2,99 @@
   alias: Arm Blink
   description: Arms the Blink alarm system at sunset
   trigger:
-  - platform: sun
-    event: sunset
-    offset: 0
+    - platform: sun
+      event: sunset
+      offset: 0
   condition:
-  - condition: state
-    entity_id: alarm_control_panel.blink_house
-    state: disarmed
-  - condition: sun
-    after: sunset
-  action:
-  - service: alarm_control_panel.alarm_arm_away
-    target:
+    - condition: state
       entity_id: alarm_control_panel.blink_house
-    data: {}
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 30
-      milliseconds: 0
-  - condition: time
-    after: 07:00:00
-    before: '23:00:00'
-  - service: notify.alexa_media
-    data:
-      message: The Blink alarm has been armed successfully.
+      state: disarmed
+    - condition: sun
+      after: sunset
+  action:
+    - service: alarm_control_panel.alarm_arm_away
       target:
-      - media_player.master_bedroom_echo
-      - media_player.downstairs_echo
-      - media_player.paul_s_2nd_alexa_app_for_pc
-      - media_player.office_echo
+        entity_id: alarm_control_panel.blink_house
+      data: {}
+    - delay: '00:00:30'
+    - condition: time
+      after: '07:00:00'
+      before: '23:00:00'
+    - service: notify.alexa_media
       data:
-        type: tts
+        message: The Blink alarm has been armed successfully.
+        target:
+          - media_player.master_bedroom_echo
+          - media_player.downstairs_echo
+          - media_player.paul_s_2nd_alexa_app_for_pc
+          - media_player.office_echo
+        data:
+          type: tts
   mode: single
 - id: '1672867600743'
   alias: Midnight Gas and Electric Notifications
   description: Sends daily gas and electric cost notifications at midnight
   trigger:
-  - platform: time
-    at: 00:00:00
+    - platform: time
+      at: '00:00:00'
   condition: []
   action:
-  - service: notify.telegram_bot
-    data:
-      message: 'Good morning! Here are today''s energy costs:
-
-        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today'') }}.
-
-        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today'')
-        }}
-
-        '
-  - service: notify.email
-    data:
-      message: 'Good morning! Here are today''s energy costs:
-
-        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today'') }}.
-
-        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today'')
-        }}
-
-        '
+    - service: notify.telegram_bot
+      data:
+        message: |
+          Good morning! Here are today's energy costs:
+          Today's gas cost is {{ states('sensor.smart_meter_gas_cost_today') }}.
+          Today's electric cost is {{ states('sensor.smart_meter_electricity_cost_today') }}
+    - service: notify.email
+      data:
+        message: |
+          Good morning! Here are today's energy costs:
+          Today's gas cost is {{ states('sensor.smart_meter_gas_cost_today') }}.
+          Today's electric cost is {{ states('sensor.smart_meter_electricity_cost_today') }}
   mode: single
 - id: '1686042092819'
   alias: If DNS is turned off for longer than an hour, turn on
   description: ''
   trigger:
-  - platform: device
-    type: turned_off
-    device_id: 370a06adcd43c0c2fe8df3d31fb0661e
-    entity_id: switch.adguard_protection
-    domain: switch
+    - platform: device
+      type: turned_off
+      device_id: 370a06adcd43c0c2fe8df3d31fb0661e
+      entity_id: switch.adguard_protection
+      domain: switch
   condition: []
   action:
-  - delay:
-      hours: 1
-      minutes: 0
-      seconds: 0
-      milliseconds: 0
-  - condition: state
-    entity_id: switch.adguard_protection
-    state: 'off'
-  - service: switch.turn_on
-    target:
+    - delay: '01:00:00'
+    - condition: state
       entity_id: switch.adguard_protection
-    data: {}
-  - service: notify.telegram_bot
-    data:
-      message: DNS turned off!
+      state: 'off'
+    - service: switch.turn_on
+      target:
+        entity_id: switch.adguard_protection
+      data: {}
+    - service: notify.telegram_bot
+      data:
+        message: DNS turned off!
   mode: single
 - id: '1686173354607'
   alias: Disarm Blink
   description: ''
   trigger:
-  - platform: sun
-    event: sunrise
-    offset: 0
+    - platform: sun
+      event: sunrise
+      offset: 0
   condition:
-  - condition: state
-    entity_id: alarm_control_panel.blink_house
-    state: armed_away
-  action:
-  - service: alarm_control_panel.alarm_disarm
-    data: {}
-    target:
+    - condition: state
       entity_id: alarm_control_panel.blink_house
-  - delay:
-      minutes: 2
-  - service: notify.telegram_bot
-    data:
-      message: Blink alarm disarmed successfully.
+      state: armed_away
+  action:
+    - service: alarm_control_panel.alarm_disarm
+      data: {}
+      target:
+        entity_id: alarm_control_panel.blink_house
+    - delay: '00:02:00'
+    - service: notify.telegram_bot
+      data:
+        message: Blink alarm disarmed successfully.
   mode: single
 - id: '1686317391934'
   alias: Low Battery
@@ -120,253 +103,221 @@
     path: gmlupatelli/low_battery_notification.yaml
     input:
       actions:
-      - service: notify.telegram_bot
-        data:
-          message: '“low battery: {{ sensors}}”'
+        - service: notify.telegram_bot
+          data:
+            message: '"low battery: {{ sensors}}"'
   mode: single
 - id: '1688339061635'
   alias: 'Garden Light on for more than 10 minutes '
   description: ''
   trigger:
-  - platform: device
-    type: turned_on
-    device_id: b11e5a8be43e648563eafe34653066d7
-    entity_id: switch.socket_7_socket
-    domain: switch
-    for:
-      hours: 0
-      minutes: 20
-      seconds: 0
-  - platform: device
-    type: turned_on
-    device_id: 4c16aa2e8ab360f59cef97034e418217
-    entity_id: 49124585207f7e62d8b71fcc7f6947f2
-    domain: light
-    for:
-      hours: 0
-      minutes: 20
-      seconds: 0
+    - platform: device
+      type: turned_on
+      device_id: b11e5a8be43e648563eafe34653066d7
+      entity_id: switch.socket_7_socket
+      domain: switch
+      for:
+        hours: 0
+        minutes: 20
+        seconds: 0
+    - platform: device
+      type: turned_on
+      device_id: 4c16aa2e8ab360f59cef97034e418217
+      entity_id: 49124585207f7e62d8b71fcc7f6947f2
+      domain: light
+      for:
+        hours: 0
+        minutes: 20
+        seconds: 0
   condition: []
   action:
-  - type: turn_off
-    device_id: b11e5a8be43e648563eafe34653066d7
-    entity_id: switch.socket_7_socket
-    domain: switch
+    - type: turn_off
+      device_id: b11e5a8be43e648563eafe34653066d7
+      entity_id: switch.socket_7_socket
+      domain: switch
   mode: single
 - id: '1688742269459'
   alias: Hourly Blink Snapshots
   description: ''
   trigger:
-  - platform: time_pattern
-    minutes: '0'
+    - platform: time_pattern
+      minutes: '0'
   condition: []
   action:
-  - service: blink.trigger_camera
-    data: {}
-    target:
-      entity_id: camera.blink_front_door
-  - service: camera.snapshot
-    data_template:
-      filename: /config/www/blink/blink_front_door_{{ now().strftime("%Y%m%d-%H%M%S")
-        }}.jpg
-    target:
-      entity_id: camera.blink_front_door
-  - service: camera.snapshot
-    data_template:
-      filename: /config/www/blink/camera.blink_front_door_now.jpg
-    target:
-      entity_id: camera.blink_front_door
-  - delay:
-      hours: 0
-      minutes: 3
-      seconds: 0
-      milliseconds: 0
-  - service: blink.trigger_camera
-    data: {}
-    target:
-      entity_id: camera.blink_garden_camera
-  - service: camera.snapshot
-    data_template:
-      filename: /config/www/blink/blink_garden_camera_{{ now().strftime("%Y%m%d-%H%M%S")
-        }}.jpg
-    target:
-      entity_id: camera.blink_garden_camera
-  - service: camera.snapshot
-    data_template:
-      filename: /config/www/blink/blink_garden_camera_now.jpg
-    target:
-      entity_id: camera.blink_garden_camera
-  - delay:
-      hours: 0
-      minutes: 3
-      seconds: 0
-      milliseconds: 0
-  - service: blink.blink_update
-    data: {}
+    - service: blink.trigger_camera
+      data: {}
+      target:
+        entity_id: camera.blink_front_door
+    - service: camera.snapshot
+      data_template:
+        filename: /config/www/blink/blink_front_door_{{ now().strftime("%Y%m%d-%H%M%S") }}.jpg
+      target:
+        entity_id: camera.blink_front_door
+    - service: camera.snapshot
+      data_template:
+        filename: /config/www/blink/camera.blink_front_door_now.jpg
+      target:
+        entity_id: camera.blink_front_door
+    - delay: '00:03:00'
+    - service: blink.trigger_camera
+      data: {}
+      target:
+        entity_id: camera.blink_garden_camera
+    - service: camera.snapshot
+      data_template:
+        filename: /config/www/blink/blink_garden_camera_{{ now().strftime("%Y%m%d-%H%M%S") }}.jpg
+      target:
+        entity_id: camera.blink_garden_camera
+    - service: camera.snapshot
+      data_template:
+        filename: /config/www/blink/blink_garden_camera_now.jpg
+      target:
+        entity_id: camera.blink_garden_camera
+    - delay: '00:03:00'
+    - service: blink.blink_update
+      data: {}
   mode: single
 - id: '1688768949634'
   alias: 'Conservatory light on if movement '
   description: ''
   trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.conservatory_camera_cell_motion_detection
-    to: 'on'
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 0
+    - platform: state
+      entity_id:
+        - binary_sensor.conservatory_camera_cell_motion_detection
+      to: 'on'
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 0
   condition:
-  - condition: device
-    type: is_off
-    device_id: b11e5a8be43e648563eafe34653066d7
-    entity_id: c845cf7e7261566197341334093fba75
-    domain: switch
-  - condition: device
-    type: is_off
-    device_id: 4c16aa2e8ab360f59cef97034e418217
-    entity_id: 49124585207f7e62d8b71fcc7f6947f2
-    domain: light
-  - condition: sun
-    before: sunrise
-    after: sunset
+    - condition: device
+      type: is_off
+      device_id: b11e5a8be43e648563eafe34653066d7
+      entity_id: c845cf7e7261566197341334093fba75
+      domain: switch
+    - condition: device
+      type: is_off
+      device_id: 4c16aa2e8ab360f59cef97034e418217
+      entity_id: 49124585207f7e62d8b71fcc7f6947f2
+      domain: light
+    - condition: sun
+      before: sunrise
+      after: sunset
   action:
-  - type: turn_on
-    device_id: 4c16aa2e8ab360f59cef97034e418217
-    entity_id: 49124585207f7e62d8b71fcc7f6947f2
-    domain: light
-  - type: turn_on
-    device_id: b11e5a8be43e648563eafe34653066d7
-    entity_id: c845cf7e7261566197341334093fba75
-    domain: switch
-  - delay:
-      hours: 0
-      minutes: 3
-      seconds: 0
-      milliseconds: 0
-  - type: turn_off
-    device_id: 4c16aa2e8ab360f59cef97034e418217
-    entity_id: 49124585207f7e62d8b71fcc7f6947f2
-    domain: light
-  - type: turn_off
-    device_id: b11e5a8be43e648563eafe34653066d7
-    entity_id: c845cf7e7261566197341334093fba75
-    domain: switch
-  - service: input_number.increment
-    target:
-      entity_id: input_number.automation_run_count
-    data: {}
-  - service: input_number.set_value
-    data_template:
-      entity_id: input_number.light_on_minutes
-      value: '{{ (states(''input_number.light_on_minutes'') | int) + 3 }}'
+    - type: turn_on
+      device_id: 4c16aa2e8ab360f59cef97034e418217
+      entity_id: 49124585207f7e62d8b71fcc7f6947f2
+      domain: light
+    - type: turn_on
+      device_id: b11e5a8be43e648563eafe34653066d7
+      entity_id: c845cf7e7261566197341334093fba75
+      domain: switch
+    - delay: '00:03:00'
+    - type: turn_off
+      device_id: 4c16aa2e8ab360f59cef97034e418217
+      entity_id: 49124585207f7e62d8b71fcc7f6947f2
+      domain: light
+    - type: turn_off
+      device_id: b11e5a8be43e648563eafe34653066d7
+      entity_id: c845cf7e7261566197341334093fba75
+      domain: switch
+    - service: input_number.increment
+      target:
+        entity_id: input_number.automation_run_count
+      data: {}
+    - service: input_number.set_value
+      data_template:
+        entity_id: input_number.light_on_minutes
+        value: '{{ (states(''input_number.light_on_minutes'') | int) + 3 }}'
   mode: single
 - id: '1689329658622'
   alias: Back Door Open
   description: ''
   trigger:
-  - platform: state
-    entity_id: binary_sensor.door_sensor
-    to: 'on'
+    - platform: state
+      entity_id: binary_sensor.door_sensor
+      to: 'on'
   condition: []
   action:
-  - service: notify.alexa_media
-    data:
-      message: The back door is open.
-      title: Your back door Friend
-      target:
-      - media_player.master_bedroom_echo
-      - media_player.downstairs_echo
-      - media_player.paul_s_2nd_alexa_app_for_pc
+    - service: notify.alexa_media
       data:
-        type: tts
+        message: The back door is open.
+        title: Your back door Friend
+        target:
+          - media_player.master_bedroom_echo
+          - media_player.downstairs_echo
+          - media_player.paul_s_2nd_alexa_app_for_pc
+        data:
+          type: tts
   mode: single
 - id: '1689333385634'
   alias: Evening Gas and Electric Notifications
   description: Sends daily gas and electric cost notifications in the evening
   trigger:
-  - platform: time
-    at: '17:00:00'
+    - platform: time
+      at: '17:00:00'
   condition: []
   action:
-  - service: notify.alexa_media
-    data:
-      message: 'Good evening! Here are today''s energy costs:
-
-
-        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today_2'') }}.
-
-
-        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today_2'')
-        }}
-
-        '
-      target:
-      - media_player.master_bedroom_echo
-      - media_player.downstairs_echo
-      - media_player.paul_s_2nd_alexa_app_for_pc
-      - media_player.office_echo
+    - service: notify.alexa_media
       data:
-        type: tts
-  - service: notify.telegram_bot
-    data:
-      message: 'Good evening! Here are today''s energy costs:
-
-
-        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today_2'') }}.
-
-
-        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today_2'')
-        }}
-
-        '
-  - service: notify.email
-    data:
-      message: 'Good evening! Here are today''s energy costs:
-
-
-        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today_2'') }}.
-
-
-        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today_2'')
-        }}
-
-        '
+        message: |
+          Good evening! Here are today's energy costs:
+          Today's gas cost is {{ states('sensor.smart_meter_gas_cost_today_2') }}.
+          Today's electric cost is {{ states('sensor.smart_meter_electricity_cost_today_2') }}
+        target:
+          - media_player.master_bedroom_echo
+          - media_player.downstairs_echo
+          - media_player.paul_s_2nd_alexa_app_for_pc
+          - media_player.office_echo
+        data:
+          type: tts
+    - service: notify.telegram_bot
+      data:
+        message: |
+          Good evening! Here are today's energy costs:
+          Today's gas cost is {{ states('sensor.smart_meter_gas_cost_today_2') }}.
+          Today's electric cost is {{ states('sensor.smart_meter_electricity_cost_today_2') }}
+    - service: notify.email
+      data:
+        message: |
+          Good evening! Here are today's energy costs:
+          Today's gas cost is {{ states('sensor.smart_meter_gas_cost_today_2') }}.
+          Today's electric cost is {{ states('sensor.smart_meter_electricity_cost_today_2') }}
   mode: single
 - id: '1689342086245'
   alias: Push updates to GitHub
   description: ''
   trigger:
-  - platform: homeassistant
-    event: start
+    - platform: homeassistant
+      event: start
   condition: []
   action:
-  - service: shell_command.upload_config_to_github
-    data: {}
-  - service: persistent_notification.create
-    data:
-      message: 'GitHub update attempt: {{ now().strftime("%Y-%m-%d %H:%M:%S") }}'
-      title: GitHub Update
-  - service: system_log.write
-    data:
-      level: error
-      message: 'GitHub update attempt: {{ now().strftime("%Y-%m-%d %H:%M:%S") }}'
+    - service: shell_command.upload_config_to_github
+      data: {}
+    - service: persistent_notification.create
+      data:
+        message: 'GitHub update attempt: {{ now().strftime("%Y-%m-%d %H:%M:%S") }}'
+        title: GitHub Update
+    - service: system_log.write
+      data:
+        level: error
+        message: 'GitHub update attempt: {{ now().strftime("%Y-%m-%d %H:%M:%S") }}'
   mode: single
 - id: '1690464825109'
   alias: Watchman
   description: ''
   trigger:
-  - platform: time
-    at: '10:00:00'
+    - platform: time
+      at: '10:00:00'
   condition: []
   action:
-  - service: watchman.report
-    data:
-      create_file: true
-      send_notification: true
-      parse_config: false
-      chunk_size: false
-      service: notify.group_telegram_and_email
+    - service: watchman.report
+      data:
+        create_file: true
+        send_notification: true
+        parse_config: false
+        chunk_size: false
+        service: notify.group_telegram_and_email
   mode: single
 - id: '1691748663178'
   alias: Home Assistant Auto-update on a schedule base
@@ -380,65 +331,61 @@
   alias: Repack DB Every Sunday
   description: Repack DB Every Sunday
   trigger:
-  - platform: time
-    at: '23:00:00'
+    - platform: time
+      at: '23:00:00'
   condition:
-  - condition: time
-    weekday:
-    - sun
+    - condition: time
+      weekday:
+        - sun
   action:
-  - service: recorder.purge
-    data:
-      repack: true
+    - service: recorder.purge
+      data:
+        repack: true
   mode: single
 - id: '1705519450000'
   alias: Turn off bird heater
   description: ''
   trigger:
-  - platform: device
-    type: turned_on
-    device_id: 2c1e9caf93af2f6360433eb5011d42d6
-    entity_id: e8f1fba56a69f522e5b13d18149fd4c0
-    domain: switch
+    - platform: device
+      type: turned_on
+      device_id: 2c1e9caf93af2f6360433eb5011d42d6
+      entity_id: e8f1fba56a69f522e5b13d18149fd4c0
+      domain: switch
   condition: []
   action:
-  - delay:
-      hours: 0
-      minutes: 10
-      seconds: 0
-      milliseconds: 0
-  - type: turn_off
-    device_id: 2c1e9caf93af2f6360433eb5011d42d6
-    entity_id: e8f1fba56a69f522e5b13d18149fd4c0
-    domain: switch
+    - delay: '00:10:00'
+    - type: turn_off
+      device_id: 2c1e9caf93af2f6360433eb5011d42d6
+      entity_id: e8f1fba56a69f522e5b13d18149fd4c0
+      domain: switch
   mode: single
 - id: '1709392756507'
   alias: Light strip
   description: ''
   trigger:
-  - platform: sun
-    event: sunset
-  - platform: time
-    at: '23:00:00'
+    - platform: sun
+      event: sunset
+    - platform: time
+      at: '23:00:00'
   condition:
-  - condition: time
-    before: '23:00:00'
+    - condition: time
+      before: '23:00:00'
   action:
-  - choose:
-    - conditions:
-      - condition: time
-        before: '23:00:00'
-      sequence:
-      - type: turn_on
-        device_id: cb8a4a776f0b561b4c61a8d186e67a02
-        entity_id: 8f30db09dcccdefeff629a6b75dc149d
-        domain: light
-    - conditions:
-      - condition: time
-        after: '23:00:00'
-      sequence:
-      - type: turn_off
-        device_id: cb8a4a776f0b561b4c61a8d186e67a02
-        entity_id: 8f30db09dcccdefeff629a6b75dc149d
-        domain: light
+    - choose:
+        - conditions:
+            - condition: time
+              before: '23:00:00'
+          sequence:
+            - type: turn_on
+              device_id: cb8a4a776f0b561b4c61a8d186e67a02
+              entity_id: 8f30db09dcccdefeff629a6b75dc149d
+              domain: light
+        - conditions:
+            - condition: time
+              after: '23:00:00'
+          sequence:
+            - type: turn_off
+              device_id: cb8a4a776f0b561b4c61a8d186e67a02
+              entity_id: 8f30db09dcccdefeff629a6b75dc149d
+              domain: light
   mode: single
