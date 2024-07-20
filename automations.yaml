@@ -150,16 +150,6 @@
       minutes: 0
       seconds: 0
   condition:
-  - condition: device
-    type: is_off
-    device_id: b11e5a8be43e648563eafe34653066d7
-    entity_id: c845cf7e7261566197341334093fba75
-    domain: switch
-  - condition: device
-    type: is_off
-    device_id: 4c16aa2e8ab360f59cef97034e418217
-    entity_id: 49124585207f7e62d8b71fcc7f6947f2
-    domain: light
   - condition: sun
     before: sunrise
     after: sunset
