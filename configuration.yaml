@@ -87,7 +87,8 @@ sensor:
           {% set unit_rate = states('sensor.smart_meter_electricity_import_unit_rate_2') | float(0) %}
           {% set standing_charge = states('sensor.smart_meter_electricity_import_standing_charge_2') | float(0) %}
           {% set usage = states('sensor.electricity_weekly') | float(0) %}
-          {{ (unit_rate * usage) + (standing_charge * 7) }}
+          {% set today = now().weekday() + 1 %}
+          {{ (unit_rate * usage) + (standing_charge * today) }}
 
       monthly_electricity_cost:
         friendly_name: "Monthly Electricity Cost"
