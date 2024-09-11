@@ -79,71 +79,73 @@ sensor:
         friendly_name: "Living Room Heat Loss"
         unit_of_measurement: "°C"
         value_template: "{{ states('sensor.temperature_difference_living_room') | float }}"
-        template:
 
-smart_meter_electricity_cost_today:
-  unique_id: smart_meter_electricity_cost_today
-  device_class: monetary
-  unit_of_measurement: "GBP"
-  state_class: "total_increasing"
-  icon: mdi:cash
-  state: "{{ (
-    states('sensor.smart_meter_electricity_import_today') | float 
-    * states('sensor.smart_meter_electricity_import_unit_rate_2') | float 
-    + states('sensor.smart_meter_electricity_import_standing_charge_2') | float
-  ) | round(2) }}"
-
-smart_meter_gas_cost_today:
-  unique_id: smart_meter_gas_cost_today
-  device_class: monetary
-  unit_of_measurement: "GBP"
-  state_class: "total_increasing"
-  icon: mdi:cash
-  state: "{{ (
-    states('sensor.smart_meter_gas_import_today') | float 
-    * states('sensor.smart_meter_gas_import_unit_rate') | float 
-    + states('sensor.smart_meter_gas_import_standing_charge') | float
-  ) | round(2) }}"
-
-weekly_electricity_cost:
-  friendly_name: "Weekly Electricity Cost"
-  unit_of_measurement: "£"
-  value_template: >
-    {% set unit_rate = states('sensor.smart_meter_electricity_import_unit_rate_2') | float(0) %}
-    {% set standing_charge = states('sensor.smart_meter_electricity_import_standing_charge_2') | float(0) %}
-    {% set usage = states('sensor.electricity_weekly') | float(0) %}
-    {% set today = now().weekday() + 1 %}
-    {{ (unit_rate * usage) + (standing_charge * today) }}
-
-monthly_electricity_cost:
-  friendly_name: "Monthly Electricity Cost"
-  unit_of_measurement: "£"
-  value_template: >
-    {% set unit_rate = states('sensor.smart_meter_electricity_import_unit_rate_2') | float(0) %}
-    {% set standing_charge = states('sensor.smart_meter_electricity_import_standing_charge_2') | float(0) %}
-    {% set usage = states('sensor.electricity_monthly') | float(0) %}
-    {% set days_in_month = now().day %}
-    {{ (unit_rate * usage) + (standing_charge * days_in_month) }}
-
-weekly_gas_cost:
-  friendly_name: "Weekly Gas Cost"
-  unit_of_measurement: "£"
-  value_template: >
-    {% set unit_rate = states('sensor.smart_gas_meter_441793504b04_smart_meter_gas_import_unit_rate') %}
-    {% set standing_charge = states('sensor.smart_gas_meter_441793504b04_smart_meter_gas_import_standing_charge') %}
-    {% set usage = states('sensor.weekly_gas_usage') %}
-    {% if unit_rate != 'unknown' and standing_charge != 'unknown' and usage != 'unknown' %}
-      {{ (unit_rate | float + standing_charge | float) * usage | float }}
-    {% else %}
-      {{ 'N/A' }}
-    {% endif %}
-
-monthly_gas_cost:
-  friendly_name: "Monthly Gas Cost"
-  unit_of_measurement: "£"
-  value_template: >
-    {% set unit_rate = states('sensor.smart_gas_meter_441793504b04_smart_meter_gas_import_unit_rate') %}
-    {% set standing_charge = states('sensor.smart_gas_meter_441793504b04_smart_meter_gas_import_st
+  - platform: template
+    sensors:
+      smart_meter_electricity_cost_today:
+        unique_id: smart_meter_electricity_cost_today
+        device_class: monetary
+        unit_of_measurement: "GBP"
+        state_class: "total_increasing"
+        icon: mdi:cash
+        state: "{{ (
+          states('sensor.smart_meter_electricity_import_today') | float 
+          * states('sensor.smart_meter_electricity_import_unit_rate_2') | float 
+          + states('sensor.smart_meter_electricity_import_standing_charge_2') | float
+        ) | round(2) }}"
+      smart_meter_gas_cost_today:
+        unique_id: smart_meter_gas_cost_today
+        device_class: monetary
+        unit_of_measurement: "GBP"
+        state_class: "total_increasing"
+        icon: mdi:cash
+        state: "{{ (
+          states('sensor.smart_meter_gas_import_today') | float 
+          * states('sensor.smart_meter_gas_import_unit_rate_2') | float 
+          + states('sensor.smart_meter_gas_import_standing_charge_2') | float
+        ) | round(2) }}"
+      weekly_electricity_cost:
+        friendly_name: "Weekly Electricity Cost"
+        unit_of_measurement: "£"
+        value_template: >
+          {% set unit_rate = states('sensor.smart_meter_electricity_import_unit_rate_2') | float(0) %}
+          {% set standing_charge = states('sensor.smart_meter_electricity_import_standing_charge_2') | float(0) %}
+          {% set usage = states('sensor.electricity_weekly') | float(0) %}
+          {% set today = now().weekday() + 1 %}
+          {{ (unit_rate * usage) + (standing_charge * today) }}
+      monthly_electricity_cost:
+        friendly_name: "Monthly Electricity Cost"
+        unit_of_measurement: "£"
+        value_template: >
+          {% set unit_rate = states('sensor.smart_meter_electricity_import_unit_rate_2') | float(0) %}
+          {% set standing_charge = states('sensor.smart_meter_electricity_import_standing_charge_2') | float(0) %}
+          {% set usage = states('sensor.electricity_monthly') | float(0) %}
+          {% set days_in_month = now().day %}
+          {{ (unit_rate * usage) + (standing_charge * days_in_month) }}
+      weekly_gas_cost:
+        friendly_name: "Weekly Gas Cost"
+        unit_of_measurement: "£"
+        value_template: >
+          {% set unit_rate = states('sensor.smart_gas_meter_441793504b04_smart_meter_gas_import_unit_rate') %}
+          {% set standing_charge = states('sensor.smart_gas_meter_441793504b04_smart_meter_gas_import_standing_charge') %}
+          {% set usage = states('sensor.weekly_gas_usage') %}
+          {% if unit_rate != 'unknown' and standing_charge != 'unknown' and usage != 'unknown' %}
+            {{ (unit_rate | float + standing_charge | float) * usage | float }}
+          {% else %}
+            {{ 'N/A' }}
+          {% endif %}
+      monthly_gas_cost:
+        friendly_name: "Monthly Gas Cost"
+        unit_of_measurement: "£"
+        value_template: >
+          {% set unit_rate = states('sensor.smart_gas_meter_441793504b04_smart_meter_gas_import_unit_rate') %}
+          {% set standing_charge = states('sensor.smart_gas_meter_441793504b04_smart_meter_gas_import_standing_charge') %}
+          {% set usage = states('sensor.monthly_gas_usage') %}
+          {% if unit_rate != 'unknown' and standing_charge != 'unknown' and usage != 'unknown' %}
+            {{ (unit_rate | float + standing_charge | float) * usage | float }}
+          {% else %}
+            {{ 'N/A' }}
+          {% endif %}
 
   - platform: sql
     db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
@@ -204,6 +206,7 @@ influxdb:
       - sensor.date
       - sensor.last_boot
       - sun.sun
+
 # Configure notifications
 notify:
   - name: email
@@ -240,14 +243,6 @@ notify:
     services:
       - service: alexa_media
       - service: telegram
-
-  - platform: alexa_media
-    name: Alexa Group
-    target:
-      - media_player.master_bedroom_echo
-      - media_player.downstairs_echo
-      - media_player.paul_s_2nd_alexa_app_for_pc
-      - media_player.office_echo
 
 # Configure recorder
 recorder:
