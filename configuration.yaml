@@ -37,6 +37,12 @@ input_number:
 
 # Configure sensors
 sensor:
+sensor:
+  - platform: command_line
+    name: AdGuard HTML Report
+    command: "bash /config/scripts/adguard_report.sh"
+    scan_interval: 86400  # Run the script once a day
+    
   - platform: template
     sensors:
       system_uptime:
@@ -283,6 +289,6 @@ http:
 shell_command:
   upload_config_to_github: 'cd /config && git add . && git commit -m "Automated commit" && git push origin master'
   pushupdates_to_github: /bin/bash /config/pushupdates.sh
-  run_adguard_report: 'bash /config/scripts/adguard_report.sh'
+  
 
 api:

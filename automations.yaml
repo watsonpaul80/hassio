@@ -357,3 +357,15 @@
     entity_id: 4ebbb99df47824e28fc006abd71f947d
     domain: switch
   mode: single
+- id: '1727864986737'
+  alias: Send AdGuard HTML Report
+  trigger:
+  - platform: time
+    at: 08:00:00
+  action:
+  - data_template:
+      title: AdGuard Weekly Report
+      message: '{{ states(''sensor.adguard_html_report'') }}'
+      html: true
+    action: notify.email_service
+  mode: single
