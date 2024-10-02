@@ -283,5 +283,6 @@ http:
 shell_command:
   upload_config_to_github: 'cd /config && git add . && git commit -m "Automated commit" && git push origin master'
   pushupdates_to_github: /bin/bash /config/pushupdates.sh
+  run_adguard_report: 'bash /config/scripts/adguard_report.sh'
 
 api:

@@ -162,7 +162,11 @@
     device_id: b11e5a8be43e648563eafe34653066d7
     entity_id: c845cf7e7261566197341334093fba75
     domain: switch
-  - delay: 00:03:00
+  - delay:
+      hours: 0
+      minutes: 4
+      seconds: 0
+      milliseconds: 0
   - type: turn_off
     device_id: 4c16aa2e8ab360f59cef97034e418217
     entity_id: 49124585207f7e62d8b71fcc7f6947f2
@@ -171,14 +175,14 @@
     device_id: b11e5a8be43e648563eafe34653066d7
     entity_id: c845cf7e7261566197341334093fba75
     domain: switch
-  - service: input_number.increment
-    target:
+  - target:
       entity_id: input_number.automation_run_count
     data: {}
-  - service: input_number.set_value
-    data_template:
+    action: input_number.increment
+  - data_template:
       entity_id: input_number.light_on_minutes
       value: '{{ (states(''input_number.light_on_minutes'') | int) + 3 }}'
+    action: input_number.set_value
   mode: single
 - id: '1689329658622'
   alias: Back Door Open
@@ -315,6 +319,7 @@
   condition:
   - condition: time
     before: '23:00:00'
+    after: '17:00:00'
   action:
   - choose:
     - conditions:
