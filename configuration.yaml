@@ -37,12 +37,11 @@ input_number:
 
 # Configure sensors
 sensor:
-sensor:
   - platform: command_line
     name: AdGuard HTML Report
     command: "bash /config/scripts/adguard_report.sh"
-    scan_interval: 86400  # Run the script once a day
-    
+    scan_interval: 86400  # Adjust based on how often you want the data refreshed
+    value_template: "{{ value }}"
   - platform: template
     sensors:
       system_uptime:

@@ -366,6 +366,5 @@
   - data_template:
       title: AdGuard Weekly Report
       message: '{{ states(''sensor.adguard_html_report'') }}'
-      html: true
-    action: notify.email_service
+    action: notify.email
   mode: single
