@@ -56,25 +56,29 @@
 - id: '1686042092819'
   alias: If DNS is turned off for longer than an hour, turn on
   description: ''
-  trigger:
-  - platform: device
-    type: turned_off
-    device_id: 370a06adcd43c0c2fe8df3d31fb0661e
-    entity_id: switch.adguard_protection
+  triggers:
+  - type: turned_off
+    device_id: b752bdeb86ff9b2e9476be2a2ece9357
+    entity_id: 3ab15b259b2971ed4774eaaddd987cb9
     domain: switch
-  condition: []
-  action:
+    trigger: device
+  conditions:
+  - condition: or
+    conditions:
+    - condition: device
+      type: is_off
+      device_id: b275164baa13c0cbcb092bc31cdea86f
+      entity_id: 59ea03ed6e3ceba0b2343035def661ef
+      domain: switch
+  actions:
   - delay: 01:00:00
-  - condition: state
-    entity_id: switch.adguard_protection
-    state: 'off'
-  - service: switch.turn_on
-    target:
+  - target:
       entity_id: switch.adguard_protection
     data: {}
-  - service: notify.telegram_bot
-    data:
+    action: switch.turn_on
+  - data:
       message: DNS turned off!
+    action: notify.telegram_bot
   mode: single
 - id: '1686173354607'
   alias: Disarm Blink
