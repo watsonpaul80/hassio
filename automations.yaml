@@ -65,11 +65,11 @@
   conditions:
   - condition: or
     conditions:
-    - condition: device
-      type: is_off
-      device_id: b275164baa13c0cbcb092bc31cdea86f
-      entity_id: 59ea03ed6e3ceba0b2343035def661ef
-      domain: switch
+    - type: is_running
+      condition: device
+      device_id: 72d9feb7375173d69f415053f71847d8
+      entity_id: 0f6bb2e86af34b37f9c35a4109020c94
+      domain: binary_sensor
   actions:
   - delay: 01:00:00
   - target:
