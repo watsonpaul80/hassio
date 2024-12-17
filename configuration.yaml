@@ -66,6 +66,25 @@ sensor:
           GROUP BY table_schema;
         column: "value"
         unit_of_measurement: MB
+  
+  - platform: command_line
+    name: "DietPi CPU Usage"
+    command: "cat /proc/loadavg | awk '{print $1}'"
+    value_template: "{{ value | float }}"
+    unit_of_measurement: "%"
+
+  - platform: command_line
+    name: "DietPi Memory Usage"
+    command: "free | grep Mem | awk '{print ($3/$2) * 100}'"
+    value_template: "{{ value | float | round(1) }}"
+    unit_of_measurement: "%"
+
+  - platform: command_line
+    name: "DietPi Disk Usage"
+    command: "df -h / | grep / | awk '{print $5}' | sed 's/%//g'"
+    value_template: "{{ value | int }}"
+    unit_of_measurement: "%"
+
 
 mqtt:
   binary_sensor:
