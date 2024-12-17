@@ -66,6 +66,7 @@ sensor:
           GROUP BY table_schema;
         column: "value"
         unit_of_measurement: MB
+
   - platform: influxdb
     host: a0d7b954-influxdb
     port: 8086
@@ -81,23 +82,6 @@ sensor:
         database: _internal
         where: '"database"=''homeassistant'' AND time > now() - 5m'
         field: diskBytes
-  - platform: command_line
-    name: "DietPi CPU Usage"
-    command: "cat /proc/loadavg | awk '{print $1}'"
-    value_template: "{{ value | float }}"
-    unit_of_measurement: "%"
-
-  - platform: command_line
-    name: "DietPi Memory Usage"
-    command: "free | grep Mem | awk '{print ($3/$2) * 100}'"
-    value_template: "{{ value | float | round(1) }}"
-    unit_of_measurement: "%"
-
-  - platform: command_line
-    name: "DietPi Disk Usage"
-    command: "df -h / | grep / | awk '{print $5}' | sed 's/%//g'"
-    value_template: "{{ value | int }}"
-    unit_of_measurement: "%"
 
 
 mqtt:
@@ -109,10 +93,35 @@ mqtt:
       device_class: "connectivity"
       unique_id: "telegram_bot_health"
 
+
   sensor:
     - name: "Telegram Daily Message Count"
       state_topic: "telegrambot/messages"
       unique_id: "telegram_daily_message_count"
+  
+    - name: "DietPi CPU Usage"
+      state_topic: "dietpi/system/cpu"
+      unique_id: "dietpi_cpu_usage"
+      device:
+        identifiers: "dietpi_device"
+        name: "DietPi Metrics"
+      state_class: measurement
+
+    - name: "DietPi Memory Usage"
+      state_topic: "dietpi/system/memory"
+      unique_id: "dietpi_memory_usage"
+      device:
+        identifiers: "dietpi_device"
+        name: "DietPi Metrics"
+      state_class: measurement
+
+    - name: "DietPi Disk Usage"
+      state_topic: "dietpi/system/disk"
+      unique_id: "dietpi_disk_usage"
+      device:
+        identifiers: "dietpi_device"
+        name: "DietPi Metrics"
+      state_class: measurement
 
 # Configure InfluxDB
 influxdb:
