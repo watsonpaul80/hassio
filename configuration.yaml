@@ -66,7 +66,21 @@ sensor:
           GROUP BY table_schema;
         column: "value"
         unit_of_measurement: MB
-  
+  - platform: influxdb
+    host: a0d7b954-influxdb
+    port: 8086
+    username: !secret influxdb_username
+    password: !secret influxdb_password
+    scan_interval: 600
+    queries:
+      - name: InfluxDB Database Size
+        unit_of_measurement: MB
+        value_template: "{{ (value | float(0) / 1024 / 1024) | round(1) }}"
+        group_function: sum
+        measurement: '"monitor"."shard"'
+        database: _internal
+        where: '"database"=''homeassistant'' AND time > now() - 5m'
+        field: diskBytes
   - platform: command_line
     name: "DietPi CPU Usage"
     command: "cat /proc/loadavg | awk '{print $1}'"
