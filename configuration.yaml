@@ -42,6 +42,7 @@ sensor:
     command: "bash /config/scripts/adguard_report.sh"
     scan_interval: 86400  # Adjust based on how often you want the data refreshed
     value_template: "{{ value }}"
+
   - platform: template
     sensors:
       system_uptime:
@@ -51,106 +52,6 @@ sensor:
         friendly_name: "Average Outdoor Temperature"
         unit_of_measurement: "°C"
         value_template: "{{ state_attr('weather.home', 'temperature') }}"
-      temperature_difference_conservatory:
-        friendly_name: "Temperature Difference Conservatory"
-        unit_of_measurement: "°C"
-        value_template: >
-          {% set indoor_temp = states('sensor.average_indoor_conservatory_temperature') %}
-          {% set outdoor_temp = states('sensor.average_outdoor_temperature') %}
-          {% if indoor_temp != 'unknown' and outdoor_temp != 'unknown' %}
-            {{ indoor_temp | float - outdoor_temp | float }}
-          {% else %}
-            {{ 'N/A' }}
-          {% endif %}
-      estimated_heat_loss_conservatory:
-        friendly_name: "Conservatory Heat Loss"
-        unit_of_measurement: "°C"
-        value_template: >
-          {% set temp_diff = states('sensor.temperature_difference_conservatory') %}
-          {% if temp_diff != 'unknown' and temp_diff != 'unavailable' and temp_diff != 'N/A' %}
-            {{ temp_diff | float }}
-          {% else %}
-            {{ 'N/A' }}
-          {% endif %}
-      average_indoor_living_room_temperature:
-        friendly_name: "Average Indoor Living Room Temperature"
-        unit_of_measurement: "°C"
-        value_template: "{{ states('sensor.living_room_temperature_temperature') }}"
-      temperature_difference_living_room:
-        friendly_name: "Temperature Difference Living Room"
-        unit_of_measurement: "°C"
-        value_template: "{{ states('sensor.average_indoor_living_room_temperature') | float - states('sensor.average_outdoor_temperature') | float }}"
-      estimated_heat_loss_living_room:
-        friendly_name: "Living Room Heat Loss"
-        unit_of_measurement: "°C"
-        value_template: "{{ states('sensor.temperature_difference_living_room') | float }}"
-
-  - platform: template
-    sensors:
-      smart_meter_electricity_cost_today:
-        unique_id: smart_meter_electricity_cost_today
-        device_class: monetary
-        unit_of_measurement: "GBP"
-        state_class: "total_increasing"
-        icon: mdi:cash
-        state: "{{ (
-          states('sensor.smart_meter_electricity_import_today') | float 
-          * states('sensor.smart_meter_electricity_import_unit_rate_2') | float 
-          + states('sensor.smart_meter_electricity_import_standing_charge_2') | float
-        ) | round(2) }}"
-      smart_meter_gas_cost_today:
-        unique_id: smart_meter_gas_cost_today
-        device_class: monetary
-        unit_of_measurement: "GBP"
-        state_class: "total_increasing"
-        icon: mdi:cash
-        state: "{{ (
-          states('sensor.smart_meter_gas_import_today') | float 
-          * states('sensor.smart_meter_gas_import_unit_rate_2') | float 
-          + states('sensor.smart_meter_gas_import_standing_charge_2') | float
-        ) | round(2) }}"
-      weekly_electricity_cost:
-        friendly_name: "Weekly Electricity Cost"
-        unit_of_measurement: "£"
-        value_template: >
-          {% set unit_rate = states('sensor.smart_meter_electricity_import_unit_rate_2') | float(0) %}
-          {% set standing_charge = states('sensor.smart_meter_electricity_import_standing_charge_2') | float(0) %}
-          {% set usage = states('sensor.electricity_weekly') | float(0) %}
-          {% set today = now().weekday() + 1 %}
-          {{ (unit_rate * usage) + (standing_charge * today) }}
-      monthly_electricity_cost:
-        friendly_name: "Monthly Electricity Cost"
-        unit_of_measurement: "£"
-        value_template: >
-          {% set unit_rate = states('sensor.smart_meter_electricity_import_unit_rate_2') | float(0) %}
-          {% set standing_charge = states('sensor.smart_meter_electricity_import_standing_charge_2') | float(0) %}
-          {% set usage = states('sensor.electricity_monthly') | float(0) %}
-          {% set days_in_month = now().day %}
-          {{ (unit_rate * usage) + (standing_charge * days_in_month) }}
-      weekly_gas_cost:
-        friendly_name: "Weekly Gas Cost"
-        unit_of_measurement: "£"
-        value_template: >
-          {% set unit_rate = states('sensor.smart_gas_meter_441793504b04_smart_meter_gas_import_unit_rate') %}
-          {% set standing_charge = states('sensor.smart_gas_meter_441793504b04_smart_meter_gas_import_standing_charge') %}
-          {% set usage = states('sensor.weekly_gas_usage') %}
-          {% if unit_rate != 'unknown' and standing_charge != 'unknown' and usage != 'unknown' %}
-            {{ (unit_rate | float + standing_charge | float) * usage | float }}
-          {% else %}
-            {{ 'N/A' }}
-          {% endif %}
-      monthly_gas_cost:
-        friendly_name: "Monthly Gas Cost"
-        unit_of_measurement: "£"
-        value_template: >
-          {% set unit_rate = states('sensor.smart_gas_meter_441793504b04_smart_meter_gas_import_unit_rate') %}
-          {% set standing_charge = states('sensor.smart_gas_meter_441793504b04_smart_meter_gas_import_standing_charge') %}
-          {% set usage = states('sensor.monthly_gas_usage') %}
-          {% if unit_rate != 'unknown' and standing_charge != 'unknown' and usage != 'unknown' %}
-            {{ (unit_rate | float + standing_charge | float) * usage | float }}
-          {% else %}
-            {{ 'N/A' }}
-          {% endif %}
 
   - platform: sql
     db_url: mysql://homeassistant:homeassistant@core-mariadb/homeassistant?charset=utf8mb4
@@ -166,29 +67,19 @@ sensor:
         column: "value"
         unit_of_measurement: MB
 
-  - platform: influxdb
-    host: a0d7b954-influxdb
-    port: 8086
-    username: !secret influxdb_username
-    password: !secret influxdb_password
-    scan_interval: 600
-    queries:
-      - name: InfluxDB Database Size
-        unit_of_measurement: MB
-        value_template: "{{ (value | float(0) / 1024 / 1024) | round(1) }}"
-        group_function: sum
-        measurement: '"monitor"."shard"'
-        database: _internal
-        where: '"database"=''homeassistant'' AND time > now() - 5m'
-        field: diskBytes
+mqtt:
+  binary_sensor:
+    - name: "Telegram Bot Health"
+      state_topic: "telegrambot/health"
+      payload_on: "online"
+      payload_off: "offline"
+      device_class: "connectivity"
+      unique_id: "telegram_bot_health"
 
-  - platform: multiscrape
-    resource: 
-      - name: "Stable Tours"
-        url: "https://www.attheraces.com/stable-tours"
-        select: "a[href^='/stable-tours/'].a--plain"
-        index: 0
-        attributes: "innerText"
+  sensor:
+    - name: "Telegram Daily Message Count"
+      state_topic: "telegrambot/messages"
+      unique_id: "telegram_daily_message_count"
 
 # Configure InfluxDB
 influxdb:
@@ -204,7 +95,7 @@ influxdb:
       - update
     entity_globs:
       - sensor.sun*
-      - weather.*
+      - weather.*  
       - sensor.system_monitor_*
       - sensor.glances_*
     entities:
@@ -258,7 +149,7 @@ recorder:
       - update
     entity_globs:
       - sensor.sun*
-      - weather.*
+      - weather.*  
     entities:
       - sensor.date
       - sensor.last_boot
@@ -288,6 +179,3 @@ http:
 shell_command:
   upload_config_to_github: 'cd /config && git add . && git commit -m "Automated commit" && git push origin master'
   pushupdates_to_github: /bin/bash /config/pushupdates.sh
-  
-
-api:
