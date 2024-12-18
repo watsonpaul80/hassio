@@ -372,3 +372,33 @@
       message: '{{ states(''sensor.adguard_html_report'') }}'
     action: notify.email
   mode: single
+- id: '1734441709415'
+  alias: Alert if Telegram Bot Goes Offline
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.telegram_bot_health
+    from: 'on'
+  conditions: []
+  actions:
+  - action: notify.telegram_bot
+    metadata: {}
+    data:
+      message: ⚠️ The Telegram Forwarder Bot has gone offline!
+  mode: single
+- id: '1734441792315'
+  alias: Alert on High CPU Usage
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.dietpi_metrics_dietpi_cpu_usage
+    above: 90
+  conditions: []
+  actions:
+  - action: notify.telegram_bot
+    metadata: {}
+    data:
+      message: '⚠️ Warning: CPU Usage on DietPi has exceeded 90%!'
+  mode: single
