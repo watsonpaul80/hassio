@@ -343,24 +343,6 @@
         entity_id: 8f30db09dcccdefeff629a6b75dc149d
         domain: light
   mode: single
-- id: '1719445906432'
-  alias: New automation
-  description: ''
-  trigger:
-  - platform: device
-    type: turned_on
-    device_id: be1b9d3d495eb11ea06d645b202f6f2b
-    entity_id: 4ebbb99df47824e28fc006abd71f947d
-    domain: switch
-  condition:
-  - condition: time
-    after: 01:10:20
-  action:
-  - type: turn_off
-    device_id: be1b9d3d495eb11ea06d645b202f6f2b
-    entity_id: 4ebbb99df47824e28fc006abd71f947d
-    domain: switch
-  mode: single
 - id: '1727864986737'
   alias: Send AdGuard HTML Report
   trigger:
@@ -380,6 +362,7 @@
     entity_id:
     - binary_sensor.telegram_bot_health
     from: 'on'
+    to: unknown
   conditions: []
   actions:
   - action: notify.telegram_bot
