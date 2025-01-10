@@ -358,17 +358,15 @@
   alias: Alert if Telegram Bot Goes Offline
   description: ''
   triggers:
-  - trigger: state
-    entity_id:
-    - binary_sensor.telegram_bot_health
-    from: 'on'
+  - entity_id: binary_sensor.telegram_bot_health
+    from: connected
     to: unknown
+    trigger: state
   conditions: []
   actions:
-  - action: notify.telegram_bot
-    metadata: {}
-    data:
+  - data:
       message: ⚠️ The Telegram Forwarder Bot has gone offline!
+    action: notify.telegram_bot
   mode: single
 - id: '1734441792315'
   alias: Alert on High CPU Usage
