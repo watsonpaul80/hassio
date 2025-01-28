@@ -358,10 +358,11 @@
   alias: Alert if Telegram Bot Goes Offline
   description: ''
   triggers:
-  - entity_id: binary_sensor.telegram_bot_health
-    from: connected
-    to: unknown
+  - entity_id:
+    - binary_sensor.telegram_bot_health
+    to:
     trigger: state
+    from: 'on'
   conditions: []
   actions:
   - data:
