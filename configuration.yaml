@@ -134,6 +134,8 @@ mqtt:
       unique_id: "telegram_bot_last_seen"
       device_class: timestamp
 
+    
+
 
 # Configure InfluxDB
 influxdb:

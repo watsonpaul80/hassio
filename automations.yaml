@@ -417,7 +417,7 @@
   - trigger: time_pattern
     hours: '*'
     minutes: '*'
-    seconds: '00'
+    seconds: '1'
   conditions: []
   actions:
   - action: homeassistant.update_entity
