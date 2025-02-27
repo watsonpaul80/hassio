@@ -92,7 +92,11 @@ mqtt:
       payload_off: "offline"
       device_class: "connectivity"
       unique_id: "telegram_bot_health"
-
+      off_delay: 600  # If no update for 10 mins, assume bot is offline
+      availability:
+        - topic: "homeassistant/status"
+          payload_available: "online"
+          payload_not_available: "offline"
 
   sensor:
     - name: "Telegram Daily Message Count"
