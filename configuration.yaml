@@ -93,7 +93,7 @@ mqtt:
       payload_off: "offline"
       device_class: "connectivity"
       unique_id: "telegram_bot_health"
-      off_delay: 60  # Adjust this (see next step)
+      off_delay: 125  # Adjust this (see next step)
       availability:
         - topic: "homeassistant/status"
           payload_available: "online"

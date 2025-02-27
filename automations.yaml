@@ -363,15 +363,16 @@
     to:
     trigger: state
     from: 'on'
-    for:
-      hours: 0
-      minutes: 10
-      seconds: 0
   conditions: []
   actions:
   - data:
       message: ⚠️ The Telegram Forwarder Bot has gone offline!
     action: notify.telegram_bot
+  - action: notify.mobile_app_moto_g55_5g
+    metadata: {}
+    data:
+      message: Bot OFFLINE
+      title: Bot OFFLINE
   mode: single
 - id: '1734441792315'
   alias: Alert on High CPU Usage
