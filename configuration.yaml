@@ -98,6 +98,9 @@ mqtt:
         - topic: "homeassistant/status"
           payload_available: "online"
           payload_not_available: "offline"
+      device:
+        identifiers: "dietpi_device"
+        name: "DietPi Metrics"
 
   sensor:
     - name: "Telegram Daily Message Count"
@@ -123,16 +126,22 @@ mqtt:
     - name: "DietPi Disk Usage"
       state_topic: "dietpi/system/disk"
       unique_id: "dietpi_disk_usage"
+      value_template: "{{ value | float }}"
+      unit_of_measurement: "%"
       device:
         identifiers: "dietpi_device"
         name: "DietPi Metrics"
       state_class: measurement
+
 
     - name: "Telegram Bot Last Seen"
       state_topic: "telegrambot/health"
       value_template: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
       unique_id: "telegram_bot_last_seen"
       device_class: timestamp
+      device:
+        identifiers: "dietpi_device"
+        name: "DietPi Metrics"
 
     
 

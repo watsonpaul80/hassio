@@ -424,9 +424,8 @@
     metadata: {}
     data:
       entity_id:
-      - binary_sensor.192_168_3_20
-      - device_tracker.192_168_3_20
       - sensor.192_168_3_20_round_trip_time_average
       - sensor.192_168_3_20_round_trip_time_maximum
       - sensor.192_168_3_20_round_trip_time_minimum
+      - binary_sensor.192_168_3_20
   mode: single
