@@ -87,20 +87,17 @@ sensor:
 
 mqtt:
   binary_sensor:
-    - name: "Telegram Bot Health"
+    - name: "DietPi Metrics Telegram Bot Health"
       state_topic: "telegrambot/health"
       payload_on: "online"
       payload_off: "offline"
       device_class: "connectivity"
       unique_id: "telegram_bot_health"
-      off_delay: 600  # If no update for 10 mins, assume bot is offline
+      off_delay: 600  # Adjust this (see next step)
       availability:
         - topic: "homeassistant/status"
           payload_available: "online"
           payload_not_available: "offline"
-      device:
-        identifiers: "dietpi_device"
-        name: "DietPi Metrics"
 
   sensor:
     - name: "Telegram Daily Message Count"
