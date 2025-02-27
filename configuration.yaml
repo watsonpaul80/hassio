@@ -127,6 +127,13 @@ mqtt:
         name: "DietPi Metrics"
       state_class: measurement
 
+    - name: "Telegram Bot Last Seen"
+      state_topic: "telegrambot/health"
+      value_template: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+      unique_id: "telegram_bot_last_seen"
+      device_class: timestamp
+
+
 # Configure InfluxDB
 influxdb:
   host: a0d7b954-influxdb

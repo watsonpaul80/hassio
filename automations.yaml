@@ -363,6 +363,10 @@
     to:
     trigger: state
     from: 'on'
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
   conditions: []
   actions:
   - data:
