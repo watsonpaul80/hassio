@@ -410,3 +410,23 @@
       message: The Orange Pi (192.168.3.20) has been unreachable for 5+ minutes!
       title: ⚠️ Orange Pi Offline
   mode: single
+- id: '1740672510375'
+  alias: Polling for ICMP
+  description: ''
+  triggers:
+  - trigger: time_pattern
+    hours: '*'
+    minutes: '*'
+    seconds: '00'
+  conditions: []
+  actions:
+  - action: homeassistant.update_entity
+    metadata: {}
+    data:
+      entity_id:
+      - binary_sensor.192_168_3_20
+      - device_tracker.192_168_3_20
+      - sensor.192_168_3_20_round_trip_time_average
+      - sensor.192_168_3_20_round_trip_time_maximum
+      - sensor.192_168_3_20_round_trip_time_minimum
+  mode: single

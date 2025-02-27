@@ -82,11 +82,7 @@ sensor:
         database: _internal
         where: '"database"=''homeassistant'' AND time > now() - 5m'
         field: diskBytes
-  - platform: ping
-    name: "DietPi Alive?"
-    host: 192.168.3.20
-    device_class: connectivity
-    scan_interval: 60
+
 
 
 mqtt:
