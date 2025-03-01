@@ -397,7 +397,7 @@
     entity_id:
     - binary_sensor.192_168_3_20
     from: 'on'
-    to: 'off'
+    to:
   conditions: []
   actions:
   - action: notify.telegram_bot
