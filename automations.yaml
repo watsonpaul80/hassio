@@ -429,4 +429,5 @@
       - sensor.192_168_3_20_round_trip_time_maximum
       - sensor.192_168_3_20_round_trip_time_minimum
       - binary_sensor.192_168_3_20
+      - binary_sensor.telegram_bot_health
   mode: single
