@@ -182,19 +182,19 @@ notify:
     platform: group
     services:
       - service: email
-      - service: telegram
+      - service: telegram_bot
 
   - name: group_alexa_and_telegram
     platform: group
     services:
       - service: alexa_media
-      - service: telegram
+      - service: telegram_bot
   
   - name: group_telegram_and_phone
     platform: group
     services:
       - service: mobile_app_paul
-      - service: telegram
+      - service: telegram_bot
 
 # Configure recorder
 recorder:
