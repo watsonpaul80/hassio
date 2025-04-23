@@ -1,28 +1,13 @@
 - id: '1620071993063'
-  alias: Arm Blink
-  description: Arms the Blink alarm system at sunset
-  trigger:
-  - platform: sun
-    event: sunset
-    offset: 0
-  condition:
-  - condition: state
-    entity_id: alarm_control_panel.blink_house
-    state: disarmed
-  - condition: sun
-    after: sunset
-  action:
-  - service: alarm_control_panel.alarm_arm_away
-    target:
+  alias: Disarm Blink (Improved)
+  description: Disarms the Blink alarm system at 7:00 AM.
+  triggers:
+  - at: 07:00:00
+    trigger: time
+  actions:
+  - target:
       entity_id: alarm_control_panel.blink_house
-    data: {}
-  - delay: 00:00:30
-  - condition: time
-    after: 07:00:00
-    before: '23:00:00'
-  - service: notify.telegram_bot
-    data:
-      message: House is Armed
+    action: alarm_control_panel.alarm_disarm
   mode: single
 - id: '1672867600743'
   alias: Midnight Gas and Electric Notifications
@@ -79,27 +64,6 @@
   - data:
       message: DNS turned off!
     action: notify.telegram_bot
-  mode: single
-- id: '1686173354607'
-  alias: Disarm Blink
-  description: ''
-  trigger:
-  - platform: sun
-    event: sunrise
-    offset: 0
-  condition:
-  - condition: state
-    entity_id: alarm_control_panel.blink_house
-    state: armed_away
-  action:
-  - service: alarm_control_panel.alarm_disarm
-    data: {}
-    target:
-      entity_id: alarm_control_panel.blink_house
-  - delay: 00:02:00
-  - service: notify.telegram_bot
-    data:
-      message: Blink alarm disarmed successfully.
   mode: single
 - id: '1686317391934'
   alias: Low Battery
@@ -295,23 +259,6 @@
     data:
       repack: true
   mode: single
-- id: '1705519450000'
-  alias: Turn off bird heater
-  description: ''
-  trigger:
-  - platform: device
-    type: turned_on
-    device_id: 2c1e9caf93af2f6360433eb5011d42d6
-    entity_id: e8f1fba56a69f522e5b13d18149fd4c0
-    domain: switch
-  condition: []
-  action:
-  - delay: 00:10:00
-  - type: turn_off
-    device_id: 2c1e9caf93af2f6360433eb5011d42d6
-    entity_id: e8f1fba56a69f522e5b13d18149fd4c0
-    domain: switch
-  mode: single
 - id: '1709392756507'
   alias: Light strip
   description: ''
@@ -343,17 +290,6 @@
         entity_id: 8f30db09dcccdefeff629a6b75dc149d
         domain: light
   mode: single
-- id: '1727864986737'
-  alias: Send AdGuard HTML Report
-  trigger:
-  - platform: time
-    at: 08:00:00
-  action:
-  - data_template:
-      title: AdGuard Weekly Report
-      message: '{{ states(''sensor.adguard_html_report'') }}'
-    action: notify.email
-  mode: single
 - id: '1734441709415'
   alias: Alert if Telegram Bot Goes Offline
   description: ''
@@ -375,20 +311,58 @@
       title: Bot OFFLINE
   mode: single
 - id: '1734441792315'
-  alias: Alert on High CPU Usage
-  description: ''
+  alias: System Resource Alert
+  description: Sends a Telegram notification when CPU, Memory, or Swap usage exceeds
+    a threshold.
   triggers:
-  - trigger: numeric_state
-    entity_id:
-    - sensor.dietpi_metrics_dietpi_cpu_usage
+  - entity_id: sensor.glances_cpu_used
+    above: 80
+    id: cpu_high
+    trigger: numeric_state
+  - entity_id: sensor.glances_ram_used_percent
+    above: 85
+    id: memory_high
+    trigger: numeric_state
+  - entity_id: sensor.glances_swap_used_percent
+    above: 75
+    id: swap_high
+    trigger: numeric_state
+  - entity_id: sensor.dietpi_metrics_dietpi_cpu_usage
     above: 90
+    id: dietpi_cpu_high
+    trigger: numeric_state
   conditions: []
   actions:
-  - action: notify.telegram_bot
-    metadata: {}
-    data:
-      message: '⚠️ Warning: CPU Usage on DietPi has exceeded 90%!'
-  mode: single
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: cpu_high
+      sequence:
+      - data:
+          message: ⚠️ High CPU Usage Alert! CPU usage is above 80% on HASSIO(Glances
+            sensor).
+        action: notify.telegram_bot
+    - conditions:
+      - condition: trigger
+        id: memory_high
+      sequence:
+      - data:
+          message: ⚠️ High Memory Usage Alert! Memory usage is above 85% on HASSIO
+        action: notify.telegram_bot
+    - conditions:
+      - condition: trigger
+        id: swap_high
+      sequence:
+      - data:
+          message: ⚠️ High Swap Usage Alert! Swap usage is above 75% on HASSIO
+        action: notify.telegram_bot
+    - conditions:
+      - condition: trigger
+        id: dietpi_cpu_high
+      sequence:
+      - data:
+          message: '⚠️ Warning: CPU Usage on DietPi has exceeded 90%!'
+        action: notify.telegram_bot
 - id: '1740662831776'
   alias: 'Alert: Orange Pi Offline'
   description: ''
@@ -430,4 +404,19 @@
       - sensor.192_168_3_20_round_trip_time_minimum
       - binary_sensor.192_168_3_20
       - binary_sensor.telegram_bot_health
+  mode: single
+- id: '1745328602055'
+  alias: Arm Blink at Night (Even When Home)
+  description: Arms the Blink alarm system in away mode at 10:00 PM.
+  triggers:
+  - at: '22:00:00'
+    trigger: time
+  conditions:
+  - condition: time
+    after: '22:00:00'
+    before: 06:00:00
+  actions:
+  - target:
+      entity_id: alarm_control_panel.blink_house
+    action: alarm_control_panel.alarm_arm_away
   mode: single
