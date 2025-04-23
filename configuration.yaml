@@ -190,11 +190,11 @@ notify:
       - service: alexa_media
       - service: telegram
   
-  - name: group_telegream_and_phone
+  - name: group_telegram_and_phone
     platform: group
     services:
-      - service: notify.mobile_app_moto_g55_5g
-      - service: notify.telegram_bot
+      - service: mobile_app_paul
+      - service: telegram
 
 # Configure recorder
 recorder:
