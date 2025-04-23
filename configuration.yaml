@@ -189,6 +189,12 @@ notify:
     services:
       - service: alexa_media
       - service: telegram
+  
+  - name: group_telegream_and_phone
+    platform: group
+    services:
+      - service: notify.mobile_app_moto_g55_5g
+      - service: notify.telegram_bot
 
 # Configure recorder
 recorder:
