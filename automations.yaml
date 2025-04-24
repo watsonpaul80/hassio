@@ -65,17 +65,6 @@
       message: DNS turned off!
     action: notify.telegram_bot
   mode: single
-- id: '1686317391934'
-  alias: Low Battery
-  description: ''
-  use_blueprint:
-    path: gmlupatelli/low_battery_notification.yaml
-    input:
-      actions:
-      - service: notify.telegram_bot
-        data:
-          message: '"low battery: {{ sensors}}"'
-  mode: single
 - id: '1688339061635'
   alias: 'Garden Light on for more than 10 minutes '
   description: ''
@@ -312,7 +301,7 @@
   mode: single
 - id: '1734441792315'
   alias: System Resource Alert
-  description: Sends a Telegram notification when CPU, Memory, or Swap usage exceeds
+  description: Sends a notification when CPU, Memory, Swap, or DietPi usage exceeds
     a threshold.
   triggers:
   - entity_id: sensor.glances_cpu_used
@@ -331,6 +320,14 @@
     above: 90
     id: dietpi_cpu_high
     trigger: numeric_state
+  - entity_id: sensor.dietpi_metrics_dietpi_disk_usage
+    above: 80
+    id: dietpi_disk_high
+    trigger: numeric_state
+  - entity_id: sensor.dietpi_metrics_dietpi_memory_usage
+    above: 80
+    id: dietpi_memory_high
+    trigger: numeric_state
   conditions: []
   actions:
   - choose:
@@ -339,30 +336,45 @@
         id: cpu_high
       sequence:
       - data:
-          message: ⚠️ High CPU Usage Alert! CPU usage is above 80% on HASSIO(Glances
-            sensor).
-        action: notify.telegram_bot
+          message: ⚠️ High CPU Usage Alert! CPU usage is above 80% on HASSIO (Glances).
+        action: notify.group_telegram_and_phone
     - conditions:
       - condition: trigger
         id: memory_high
       sequence:
       - data:
           message: ⚠️ High Memory Usage Alert! Memory usage is above 85% on HASSIO
-        action: notify.telegram_bot
+            (Glances).
+        action: notify.group_telegram_and_phone
     - conditions:
       - condition: trigger
         id: swap_high
       sequence:
       - data:
-          message: ⚠️ High Swap Usage Alert! Swap usage is above 75% on HASSIO
-        action: notify.telegram_bot
+          message: ⚠️ High Swap Usage Alert! Swap usage is above 75% on HASSIO (Glances).
+        action: notify.group_telegram_and_phone
     - conditions:
       - condition: trigger
         id: dietpi_cpu_high
       sequence:
       - data:
-          message: '⚠️ Warning: CPU Usage on DietPi has exceeded 90%!'
-        action: notify.telegram_bot
+          message: ⚠️ CPU Usage on DietPi has exceeded 90%!
+        action: notify.group_telegram_and_phone
+    - conditions:
+      - condition: trigger
+        id: dietpi_disk_high
+      sequence:
+      - data:
+          message: ⚠️ Disk Usage on DietPi is above 80%!
+        action: notify.group_telegram_and_phone
+    - conditions:
+      - condition: trigger
+        id: dietpi_memory_high
+      sequence:
+      - data:
+          message: ⚠️ Memory Usage on DietPi is above 80%!
+        action: notify.group_telegram_and_phone
+  mode: single
 - id: '1740662831776'
   alias: 'Alert: Orange Pi Offline'
   description: ''
@@ -419,4 +431,227 @@
   - target:
       entity_id: alarm_control_panel.blink_house
     action: alarm_control_panel.alarm_arm_away
+  mode: single
+- id: '1745421854661'
+  alias: Add-on Update Available Notification
+  description: Sends a notification when an add-on update is available.
+  triggers:
+  - entity_id:
+    - update.adguard_home_update
+    - update.amazon_s3_backup_addon_for_home_assistant_update
+    - update.chrony_update
+    - update.cloudflared_update
+    - update.file_editor_update
+    - update.glances_update
+    - update.go2rtc_update
+    - update.home_assistant_core_update
+    - update.home_assistant_google_drive_backup_update
+    - update.home_assistant_operating_system_update
+    - update.home_assistant_supervisor_update
+    - update.influxdb_update
+    - update.let_s_encrypt_update
+    - update.mariadb_update
+    - update.minio_update_2
+    - update.mosquitto_broker_update
+    - update.music_assistant_server_update
+    - update.nginx_proxy_manager_update
+    - update.node_red_update
+    - update.phpmyadmin_update
+    - update.plex_media_server_update
+    - update.portainer_update
+    - update.samba_nas_update
+    - update.ssh_web_terminal_update
+    - update.studio_code_server_update
+    - update.telegram_forwarder_update
+    - update.terminal_ssh_update
+    to: 'on'
+    trigger: state
+  conditions: []
+  actions:
+  - data:
+      title: Add-on Update Available
+      message: 'An update is available for {{ trigger.to_state.attributes.title }}.
+        Current Version: {{ trigger.to_state.attributes.installed_version }}, Newest
+        Version: {{ trigger.to_state.attributes.latest_version }}'
+    action: notify.group_telegram_and_phone
+  mode: parallel
+- id: '1745422678141'
+  alias: Add-on Monitor and Auto-Restart
+  description: Monitors critical add-ons. If one stops, attempts to restart and notifies.
+  triggers:
+  - entity_id:
+    - binary_sensor.mosquitto_broker_running
+    - binary_sensor.influxdb_running
+    - binary_sensor.grafana_running
+    - binary_sensor.node_red_running
+    - binary_sensor.adguard_home_running
+    - binary_sensor.mariadb_running
+    - binary_sensor.cloudflared_running
+    - binary_sensor.file_editor_running
+    - binary_sensor.plex_media_server_running
+    - binary_sensor.portainer_running
+    - binary_sensor.samba_nas_running
+    - binary_sensor.ssh_web_terminal_running
+    - binary_sensor.studio_code_server_running
+    - binary_sensor.go2rtc_running
+    - binary_sensor.home_assistant_google_drive_backup_running
+    - binary_sensor.chrony_running
+    - binary_sensor.phpmyadmin_running
+    - binary_sensor.terminal_ssh_running
+    to: 'off'
+    trigger: state
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ addon_slug is defined }}'
+      sequence:
+      - data:
+          title: Add-on Stopped
+          message: '{{ friendly_name }} has stopped running. Attempting to restart...'
+        action: notify.group_telegram_and_phone
+      - data:
+          addon: '{{ addon_slug }}'
+        action: hassio.addon_restart
+      - wait_template: '{{ is_state(trigger.entity_id, ''on'') }}'
+        timeout: 00:03:30
+        continue_on_timeout: true
+      - data:
+          title: Add-on Restart Status
+          message: "{% if is_state(trigger.entity_id, 'on') %}\n  {{ friendly_name
+            }} has been successfully restarted.\n{% else %}\n  Failed to restart {{
+            friendly_name }} within timeout. Please investigate.\n{% endif %}"
+        action: notify.group_telegram_and_phone
+    default:
+    - data:
+        title: Manual Run
+        message: This automation was triggered manually or without a valid slug.
+      action: notify.group_telegram_and_phone
+  mode: single
+  variables:
+    addon_slugs:
+      binary_sensor.mosquitto_broker_running: core_mosquitto
+      binary_sensor.influxdb_running: a0d7b954_influxdb
+      binary_sensor.grafana_running: a0d7b954_grafana
+      binary_sensor.node_red_running: a0d7b954_nodered
+      binary_sensor.adguard_home_running: a0d7b954_adguard
+      binary_sensor.mariadb_running: core_mariadb
+      binary_sensor.cloudflared_running: 9074a9fa_cloudflared
+      binary_sensor.file_editor_running: core_configurator
+      binary_sensor.plex_media_server_running: a0d7b954_plex
+      binary_sensor.portainer_running: db21ed7f_portainer
+      binary_sensor.samba_nas_running: 1a32f091_sambanas
+      binary_sensor.ssh_web_terminal_running: a0d7b954_ssh
+      binary_sensor.studio_code_server_running: a0d7b954_vscode
+      binary_sensor.go2rtc_running: a889bffc_go2rtc
+      binary_sensor.home_assistant_google_drive_backup_running: cebe7a76_hassio_google_drive_backup
+      binary_sensor.chrony_running: a0d7b954_chrony
+      binary_sensor.phpmyadmin_running: a0d7b954_phpmyadmin
+      binary_sensor.terminal_ssh_running: core_ssh
+    addon_slug: '{{ addon_slugs[trigger.entity_id] }}'
+    friendly_name: '{{ trigger.to_state.attributes.friendly_name | default(trigger.entity_id)
+      }}'
+- id: '1745499655322'
+  alias: Enhanced System Resource Alert and Mitigation
+  description: Restart Home Assistant Core if CPU usage stays high for 5 minutes
+  triggers:
+  - entity_id: sensor.glances_cpu_used
+    above: 80
+    for:
+      minutes: 5
+    trigger: numeric_state
+  actions:
+  - data:
+      title: High CPU Usage
+      message: CPU usage is {{ states('sensor.glances_cpu_used') }}%. Attempting a
+        restart.
+    action: notify.group_telegram_and_phone
+  - condition: template
+    value_template: '{{ states(''sensor.glances_cpu_used'') | float > 90 }}'
+  - target:
+      entity_id: button.homeassistant_restart
+    action: button.press
+  mode: single
+- id: '1745499677939'
+  alias: Memory Usage Warning and Restart
+  description: Restart if memory usage exceeds 85% for 5 minutes
+  triggers:
+  - entity_id: sensor.memory_use_percent
+    above: 85
+    for:
+      minutes: 5
+    trigger: numeric_state
+  actions:
+  - data:
+      title: High Memory Usage
+      message: Memory usage is {{ states('sensor.memory_use_percent') }}%. Attempting
+        a restart.
+    action: notify.group_telegram_and_phone
+  - condition: template
+    value_template: '{{ states(''sensor.memory_use_percent'') | float > 95 }}'
+  - target:
+      entity_id: button.homeassistant_restart
+    action: button.press
+  mode: single
+- id: '1745499706947'
+  alias: Low Disk Space Alert - Config
+  description: Alert when disk usage of /config exceeds 90%
+  triggers:
+  - entity_id: sensor.system_monitor_disk_use_percent_config
+    above: 90
+    trigger: numeric_state
+  actions:
+  - data:
+      title: Low Disk Space on /config
+      message: Disk usage is {{ states('sensor.system_monitor_disk_use_percent_config')
+        }}%
+    action: notify.group_telegram_and_phone
+  mode: single
+- id: '1745499727790'
+  alias: Server Unreachable Alert
+  description: Alert when 192.168.3.20 becomes unavailable
+  triggers:
+  - entity_id: sensor.192_168_3_20_round_trip_time_average
+    to: unavailable
+    trigger: state
+  actions:
+  - data:
+      title: ⚠️ Server Unreachable
+      message: Server 192.168.3.20 is unreachable. ICMP check failed.
+    action: notify.group_telegram_and_phone
+  mode: single
+- id: '1745499770012'
+  alias: High Electricity Consumption Alert
+  description: Alert if electricity consumption exceeds 3kW
+  triggers:
+  - entity_id: sensor.smart_electricty_meter_441793504b04_smart_meter_electricity_power
+    above: 3
+    trigger: numeric_state
+  actions:
+  - data:
+      title: ⚡ High Electricity Consumption
+      message: Electricity usage is {{ states('sensor.smart_electricty_meter_441793504b04_smart_meter_electricity_power')
+        }} kW
+    action: notify.group_telegram_and_phone
+  mode: single
+- id: '1745499866306'
+  alias: Low Battery Alert
+  description: Alerts when any battery sensor ending in _battery_level drops to 20%
+    or below
+  triggers:
+  - value_template: "{% for entity in states.sensor %}\n  {% if entity.entity_id.endswith('_battery_level')
+      and entity.state not in ['unavailable', 'unknown'] and entity.state | int <=
+      20 %}\n    true\n  {% endif %}\n{% endfor %}\n"
+    trigger: template
+  conditions: []
+  actions:
+  - data:
+      title: Low Battery Alert
+      message: "{% set low_batteries = [] %} {% for entity in states.sensor %}\n  {%
+        if entity.entity_id.endswith('_battery_level') and entity.state not in ['unavailable',
+        'unknown'] and entity.state | int <= 20 %}\n    {% set low_batteries = low_batteries
+        + [entity.attributes.friendly_name + ' (' + entity.state + '%)'] %}\n  {%
+        endif %}\n{% endfor %} The following batteries are low: {{ low_batteries |
+        join(', ') }}\n"
+    action: notify.group_telegram_and_phone
   mode: single
