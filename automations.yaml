@@ -463,7 +463,6 @@
     - update.ssh_web_terminal_update
     - update.studio_code_server_update
     - update.telegram_forwarder_update
-    - update.terminal_ssh_update
     to: 'on'
     trigger: state
   conditions: []
@@ -483,7 +482,6 @@
     - binary_sensor.mosquitto_broker_running
     - binary_sensor.influxdb_running
     - binary_sensor.grafana_running
-    - binary_sensor.node_red_running
     - binary_sensor.adguard_home_running
     - binary_sensor.mariadb_running
     - binary_sensor.cloudflared_running
@@ -497,7 +495,6 @@
     - binary_sensor.home_assistant_google_drive_backup_running
     - binary_sensor.chrony_running
     - binary_sensor.phpmyadmin_running
-    - binary_sensor.terminal_ssh_running
     to: 'off'
     trigger: state
   actions:
@@ -597,7 +594,8 @@
   alias: Low Disk Space Alert - Config
   description: Alert when disk usage of /config exceeds 90%
   triggers:
-  - entity_id: sensor.system_monitor_disk_use_percent_config
+  - entity_id:
+    - sensor.disk_use_percent_config
     above: 90
     trigger: numeric_state
   actions:
