@@ -663,28 +663,30 @@
   mode: single
 - id: '1746524824664'
   alias: Alert on High Usage or Offline Sensors
-  description: Notifies if any CPU/Memory sensor is over 80% or if any monitored service
-    is offline.
+  description: Notifies if any CPU/MEM sensor is over 80% or any add-on goes offline.
   triggers:
-  - value_template: "{{ states.sensor\n   | selectattr('entity_id','search','(_cpu_percent|_memory_percent)$')\n
-      \  | map(attribute='state')\n   | map('float')\n   | select('>', 80)\n   | list\n
-      \  | length > 0 }}"
+  - value_template: "{%- set thr = 80 -%} {{ states.sensor\n   | selectattr('entity_id','search','_(cpu|memory)_percent$')\n
+      \  | selectattr('state','is_number')\n   | map(attribute='state')\n   | map('float')\n
+      \  | select('>', thr)\n   | list\n   | length > 0 }}"
     trigger: template
   - value_template: "{{ states.binary_sensor\n   | selectattr('entity_id','search','_running$')\n
       \  | selectattr('state','in',['off','false'])\n   | list\n   | length > 0 }}"
     trigger: template
+  conditions: []
   actions:
   - data:
-      message: "{% set high_list = states.sensor\n   | selectattr('entity_id','search','(_cpu_percent|_memory_percent)$')\n
-        \  | selectattr('state','is_number')\n   | selectattr('state','>=',80)\n   |
-        list -%}\n{% set offline_list = states.binary_sensor\n   | selectattr('entity_id','search','_running$')\n
-        \  | selectattr('state','in',['off','false'])\n   | list -%}\n\n{% if high_list
-        | length > 0 -%}\n**High-usage sensors:**  \n{% for s in high_list -%}\n•
-        {{ s.name }} at {{ s.state }}%  \n{% endfor -%}\n{% else -%}\nNo sensors above
-        80%.  \n{% endif %}\n\n{% if offline_list | length > 0 -%}\n**Offline add-ons:**
-        \ \n{% for s in offline_list -%}\n• {{ s.name }} is offline.  \n{% endfor
-        -%}\n{% else -%}\nNo add-ons offline.  \n{% endif %}\n"
+      title: 'Alert: High CPU/Memory or Add-on Down'
+      message: "{%- set thr = 80 -%} {%- set high = states.sensor\n     | selectattr('entity_id','search','_(cpu|memory)_percent$')\n
+        \    | selectattr('state','is_number')\n     | selectattr('state','>=', thr)\n
+        \    | list -%}\n{%- set down = states.binary_sensor\n     | selectattr('entity_id','search','_running$')\n
+        \    | selectattr('state','in',['off','false'])\n     | list -%}\n\n{%- if
+        high | length > 0 -%} **High-usage sensors:**   {%- for s in high -%} • {{
+        s.name }} at {{ s.state }}%   {%- endfor -%}\n{%- else -%} No sensors above
+        {{ thr }}%.   {%- endif -%}\n{%- if down | length > 0 -%} **Offline add-ons:**
+        \  {%- for b in down -%} • {{ b.name }} is offline.   {%- endfor -%} {%- else
+        -%} No add-ons offline.   {%- endif -%}"
     action: notify.group_telegram_and_phone
+  mode: single
 - id: '1746525465329'
   alias: Turn off TV if switch is left on
   description: ''
