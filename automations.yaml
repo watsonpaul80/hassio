@@ -233,6 +233,8 @@
     input:
       schedule_entity: schedule.update_schedule
       verbose_logging_bool: true
+      backup_bool: false
+      restart_bool: true
 - id: '1694685095232'
   alias: Repack DB Every Sunday
   description: Repack DB Every Sunday
