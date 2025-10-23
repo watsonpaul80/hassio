@@ -161,35 +161,6 @@
       data:
         type: tts
   mode: single
-- id: '1689333385634'
-  alias: Evening Gas and Electric Notifications
-  description: Sends daily gas and electric cost notifications in the evening
-  trigger:
-  - platform: time
-    at: '17:00:00'
-  condition: []
-  action:
-  - service: notify.telegram_bot
-    data:
-      message: 'Good evening! Here are today''s energy costs:
-
-        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today_2'') }}.
-
-        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today_2'')
-        }}
-
-        '
-  - service: notify.email
-    data:
-      message: 'Good evening! Here are today''s energy costs:
-
-        Today''s gas cost is {{ states(''sensor.smart_meter_gas_cost_today_2'') }}.
-
-        Today''s electric cost is {{ states(''sensor.smart_meter_electricity_cost_today_2'')
-        }}
-
-        '
-  mode: single
 - id: '1689342086245'
   alias: Push updates to GitHub
   description: ''
